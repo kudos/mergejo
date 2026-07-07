@@ -1,0 +1,49 @@
+name: Build APK
+
+# Nix-native pipeline (no Docker build image — that was an atomic-Fedora workaround in
+# inkventory). The self-hosted runner must have Nix with flakes enabled and enough
+# memory/swap for an Android build (the flake provides the SDK + JDKs; see flake.nix).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Fix for bad os check
+        run: echo "RUNNER_OS=Linux" >> $GITHUB_ENV
+
+      - uses: https://cremin.dev/actions/checkout@v6
+
+      - name: Test & assemble
+        run: nix develop -c ./gradlew testDebugUnitTest assembleDebug --no-daemon
+
+      - name: Publish debug APK to the package registry
+        if: ${{ github.event_name == 'push' }}
+        env:
+          REG: https://cremin.dev/api/packages/${{ github.repository_owner }}/generic/gitops-android
+          TOKEN: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+
+          # Immutable per-commit artifact.
+          curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
+            -T "$APK" "$REG/${{ github.sha }}/gitops-debug.apk"
+
+          # Rolling "latest" on the default branch (replace the previous upload).
+          if [ "${{ github.ref_name }}" = "$DEFAULT_BRANCH" ]; then
+            curl -sS -X DELETE -H "Authorization: token $TOKEN" "$REG/latest/gitops-debug.apk" || true
+            curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
+              -T "$APK" "$REG/latest/gitops-debug.apk"
+          fi
+
+          # Tag builds get a tag-named artifact.
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
+              -T "$APK" "$REG/${{ github.ref_name }}/gitops-${{ github.ref_name }}.apk"
+          fi
