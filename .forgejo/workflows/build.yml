@@ -22,7 +22,9 @@ jobs:
       - name: Test & assemble
         # The host executor's per-step workspace copy strips gradlew's exec bit,
         # so run it through bash (read + interpreted) rather than exec'ing it.
-        run: nix develop -c bash ./gradlew testDebugUnitTest assembleDebug --no-daemon
+        # assembleBenchmark builds the release-shaped, R8-processed benchmark
+        # variant — exercises minify/shrink config that the debug build skips.
+        run: nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark --no-daemon
 
       - name: Publish debug APK to the package registry
         if: ${{ github.event_name == 'push' }}

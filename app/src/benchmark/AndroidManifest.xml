@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Makes the benchmark variant profileable so macrobenchmarks can capture
+         sampled traces on a non-debuggable build. Only applied to the `benchmark`
+         source set. -->
+    <application>
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
+    </application>
+
+</manifest>

@@ -72,6 +72,17 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+        // Release-shaped, non-debuggable, `profileable` variant for (future) macrobenchmarks.
+        // Debug-signed so it's installable in CI without the release keystore; distinct
+        // applicationId suffix so it can sit alongside a release/debug install.
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".benchmark"
+            versionNameSuffix = "-benchmark"
+            matchingFallbacks += "release"
+            isDebuggable = false
+        }
     }
 
     compileOptions {
