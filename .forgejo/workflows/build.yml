@@ -20,9 +20,9 @@ jobs:
       - uses: https://cremin.dev/actions/checkout@v6
 
       - name: Test & assemble
-        run: |
-          chmod +x ./gradlew   # the host executor's workspace copy drops the exec bit
-          nix develop -c ./gradlew testDebugUnitTest assembleDebug --no-daemon
+        # The host executor's per-step workspace copy strips gradlew's exec bit,
+        # so run it through bash (read + interpreted) rather than exec'ing it.
+        run: nix develop -c bash ./gradlew testDebugUnitTest assembleDebug --no-daemon
 
       - name: Publish debug APK to the package registry
         if: ${{ github.event_name == 'push' }}
