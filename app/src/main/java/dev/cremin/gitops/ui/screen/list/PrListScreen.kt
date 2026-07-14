@@ -68,7 +68,18 @@ fun PrListScreen(
                 FilterRow(selected = ui.filter, onSelect = viewModel::setFilter)
                 when {
                     ui.error != null && ui.totalCount == 0 ->
-                        CenteredMessage(stringResource(R.string.list_error, ui.error ?: ""), onRetry = viewModel::refresh)
+                        CenteredMessage(
+                            stringResource(R.string.list_error, ui.error ?: ""),
+                            actionLabel = stringResource(R.string.retry),
+                            onAction = viewModel::refresh,
+                        )
+                    ui.prs.isEmpty() && ui.totalCount > 0 && !ui.isRefreshing ->
+                        // PRs exist, but the active filter hides them all.
+                        CenteredMessage(
+                            stringResource(R.string.list_empty_filtered),
+                            actionLabel = stringResource(R.string.list_show_all),
+                            onAction = { viewModel.setFilter(PrFilter.ALL) },
+                        )
                     ui.prs.isEmpty() && !ui.isRefreshing ->
                         CenteredMessage(stringResource(R.string.list_empty))
                     else ->
@@ -104,7 +115,11 @@ private fun FilterRow(selected: PrFilter, onSelect: (PrFilter) -> Unit) {
 }
 
 @Composable
-private fun CenteredMessage(message: String, onRetry: (() -> Unit)? = null) {
+private fun CenteredMessage(
+    message: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,8 +133,8 @@ private fun CenteredMessage(message: String, onRetry: (() -> Unit)? = null) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        if (onRetry != null) {
-            TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+        if (actionLabel != null && onAction != null) {
+            TextButton(onClick = onAction) { Text(actionLabel) }
         }
     }
 }

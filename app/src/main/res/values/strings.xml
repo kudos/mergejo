@@ -16,6 +16,8 @@
     <!-- PR list -->
     <string name="list_title">Renovate PRs</string>
     <string name="list_empty">No open Renovate PRs. You’re all caught up.</string>
+    <string name="list_empty_filtered">No PRs match this filter.</string>
+    <string name="list_show_all">Show all</string>
     <string name="list_error">Couldn’t load PRs: %1$s</string>
     <string name="list_refresh">Refresh</string>
     <string name="filter_all">All</string>
