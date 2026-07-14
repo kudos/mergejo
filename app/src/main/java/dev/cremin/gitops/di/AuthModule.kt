@@ -6,7 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.cremin.gitops.data.auth.AuthStateStore
+import dev.cremin.gitops.data.auth.CredentialStore
 import javax.inject.Singleton
 
 @Module
@@ -15,6 +15,6 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthStateStore(@ApplicationContext context: Context): AuthStateStore =
-        AuthStateStore(context)
+    fun provideCredentialStore(@ApplicationContext context: Context): CredentialStore =
+        CredentialStore(context)
 }

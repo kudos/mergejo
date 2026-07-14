@@ -16,11 +16,8 @@ val localProps = Properties().apply {
 }
 fun localOr(key: String, default: String): String = localProps.getProperty(key) ?: default
 
+// Default server URL prefilled on the login screen (the user can change it there).
 val forgejoBaseUrl = localOr("FORGEJO_BASE_URL", "https://cremin.dev")
-val oauthClientId = localOr("OAUTH_CLIENT_ID", "")
-val oauthRedirectScheme = "dev.cremin.gitops"
-val oauthRedirectUri = "$oauthRedirectScheme:/oauth2redirect"
-val oauthScopes = "read:repository write:repository read:issue write:issue read:user"
 
 // Optional release signing (mirrors inkventory: keys live in local.properties).
 val releaseStoreFile: String? = localProps.getProperty("RELEASE_STORE_FILE")
@@ -47,13 +44,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
-        // AppAuth uses this to register its redirect receiver for our custom scheme.
-        manifestPlaceholders["appAuthRedirectScheme"] = oauthRedirectScheme
-
         buildConfigField("String", "FORGEJO_BASE_URL", "\"$forgejoBaseUrl\"")
-        buildConfigField("String", "OAUTH_CLIENT_ID", "\"$oauthClientId\"")
-        buildConfigField("String", "OAUTH_REDIRECT_URI", "\"$oauthRedirectUri\"")
-        buildConfigField("String", "OAUTH_SCOPES", "\"$oauthScopes\"")
     }
 
     signingConfigs {
@@ -144,9 +135,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
 
-    implementation(libs.appauth)
     implementation(libs.androidx.security.crypto)
-    implementation(libs.androidx.browser)
     implementation(libs.compose.markdown)
 
     implementation(libs.coil.compose)

@@ -23,12 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!--
-          AppAuth contributes net.openid.appauth.RedirectUriReceiverActivity via its
-          library manifest, wired to our custom scheme through the appAuthRedirectScheme
-          manifest placeholder (set in app/build.gradle.kts). No extra activity needed.
-        -->
     </application>
 
 </manifest>

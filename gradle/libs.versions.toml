@@ -21,9 +21,7 @@ retrofitKotlinxSerialization = "1.0.0"
 kotlinxCoroutines = "1.9.0"
 kotlinxDatetime = "0.6.1"
 
-appauth = "0.11.1"
 securityCrypto = "1.1.0-alpha06"
-browser = "1.8.0"
 composeMarkdown = "0.26.0"
 
 coil = "2.7.0"
@@ -72,9 +70,7 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
-appauth = { group = "net.openid", name = "appauth", version.ref = "appauth" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
-androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 compose-markdown = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "composeMarkdown" }
 
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }

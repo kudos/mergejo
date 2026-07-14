@@ -4,14 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import net.openid.appauth.AuthState
 
 /**
- * Persists the AppAuth [AuthState] (which holds access/refresh tokens and the
- * resolved service config) in EncryptedSharedPreferences, backed by an
- * AES256-GCM master key in the Android Keystore.
+ * Persists the Forgejo server URL and personal access token in
+ * EncryptedSharedPreferences (AES256-GCM master key in the Android Keystore).
  */
-class AuthStateStore(context: Context) {
+class CredentialStore(context: Context) {
 
     private val prefs: SharedPreferences = run {
         val masterKey = MasterKey.Builder(context)
@@ -19,27 +17,26 @@ class AuthStateStore(context: Context) {
             .build()
         EncryptedSharedPreferences.create(
             context,
-            "auth_state_prefs",
+            "credentials_prefs",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
         )
     }
 
-    fun load(): AuthState =
-        prefs.getString(KEY, null)
-            ?.let { runCatching { AuthState.jsonDeserialize(it) }.getOrNull() }
-            ?: AuthState()
+    val serverUrl: String? get() = prefs.getString(KEY_URL, null)
+    val token: String? get() = prefs.getString(KEY_TOKEN, null)
 
-    fun save(state: AuthState) {
-        prefs.edit().putString(KEY, state.jsonSerializeString()).apply()
+    fun save(serverUrl: String, token: String) {
+        prefs.edit().putString(KEY_URL, serverUrl).putString(KEY_TOKEN, token).apply()
     }
 
     fun clear() {
-        prefs.edit().remove(KEY).apply()
+        prefs.edit().clear().apply()
     }
 
     private companion object {
-        const val KEY = "auth_state"
+        const val KEY_URL = "server_url"
+        const val KEY_TOKEN = "token"
     }
 }

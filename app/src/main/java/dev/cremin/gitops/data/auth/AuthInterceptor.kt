@@ -1,24 +1,31 @@
 package dev.cremin.gitops.data.auth
 
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
 
 /**
- * Adds `Authorization: Bearer <token>` to every Forgejo API request, sourcing a
- * fresh (auto-refreshed) access token from [AuthManager]. Requests made before
- * login simply go out unauthenticated and the API returns 401.
+ * Rewrites each API request to the configured server (scheme/host/port) and adds
+ * `Authorization: token <token>`. Because the host is applied here, the Retrofit
+ * base URL is only a placeholder and any Forgejo instance works at runtime.
+ *
+ * Assumes the instance is served at the host root (no path prefix).
  */
 class AuthInterceptor(private val authManager: AuthManager) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
-        val token = authManager.freshAccessTokenBlocking()
-        val request = if (token != null) {
-            original.newBuilder()
-                .header("Authorization", "Bearer $token")
+        val builder = original.newBuilder()
+
+        authManager.serverUrl?.toHttpUrlOrNull()?.let { server ->
+            val rewritten = original.url.newBuilder()
+                .scheme(server.scheme)
+                .host(server.host)
+                .port(server.port)
                 .build()
-        } else {
-            original
+            builder.url(rewritten)
         }
-        return chain.proceed(request)
+        authManager.token?.let { builder.header("Authorization", "token $it") }
+
+        return chain.proceed(builder.build())
     }
 }

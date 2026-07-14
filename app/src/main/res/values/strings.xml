@@ -9,7 +9,9 @@
     <string name="login_sign_in">Sign in</string>
     <string name="login_signing_in">Signing in…</string>
     <string name="login_error">Sign-in failed: %1$s</string>
-    <string name="login_missing_client_id">OAUTH_CLIENT_ID is not set. Register an OAuth2 app in Forgejo and add it to local.properties.</string>
+    <string name="login_token_label">Access token</string>
+    <string name="login_token_help">A Forgejo personal access token with repository and issue scopes.</string>
+    <string name="login_create_token">Create a token…</string>
 
     <!-- PR list -->
     <string name="list_title">Renovate PRs</string>

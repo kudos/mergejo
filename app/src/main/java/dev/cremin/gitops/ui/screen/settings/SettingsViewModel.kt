@@ -28,7 +28,7 @@ class SettingsViewModel @Inject constructor(
     private val api: ForgejoApi,
 ) : ViewModel() {
 
-    val serverUrl: String = BuildConfig.FORGEJO_BASE_URL
+    val serverUrl: String = authManager.serverUrl ?: BuildConfig.FORGEJO_BASE_URL
     val versionName: String = BuildConfig.VERSION_NAME
 
     private val userLogin = MutableStateFlow<String?>(null)
