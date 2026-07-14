@@ -79,4 +79,74 @@ class RenovatePrParserTest {
         assertEquals("2.1.0", parsed.newVersion)
         assertEquals(UpdateType.MINOR, parsed.updateType)
     }
+
+    // --- Real Renovate output (captured from cremin.dev): Unicode `→` arrow + Update column. ---
+
+    @Test
+    fun `real renovate table with unicode arrow and update column`() {
+        val body = """
+            This PR contains the following updates:
+
+            | Package | Type | Update | Change | Pending |
+            |---|---|---|---|---|
+            | [hono](https://hono.dev) | dependencies | patch | [`4.12.27` → `4.12.28`](https://x) | `4.12.30` (+1) |
+
+            ---
+
+            ### Release Notes
+        """.trimIndent()
+        val parsed = RenovatePrParser.parse("Update dependency hono to v4.12.28", body)
+        assertEquals("hono", parsed.dependency)
+        assertEquals("4.12.27", parsed.currentVersion)
+        assertEquals("4.12.28", parsed.newVersion)
+        assertEquals(UpdateType.PATCH, parsed.updateType)
+    }
+
+    @Test
+    fun `range-prefixed minor bump from update column`() {
+        val body = """
+            | Package | Type | Update | Change |
+            |---|---|---|---|
+            | [@opentelemetry/auto-instrumentations-node](https://x) | dependencies | minor | [`^0.77.0` → `^0.78.0`](https://y) |
+
+            ---
+        """.trimIndent()
+        val parsed = RenovatePrParser.parse(
+            "Update dependency @opentelemetry/auto-instrumentations-node to ^0.78.0",
+            body,
+        )
+        assertEquals("0.77.0", parsed.currentVersion)
+        assertEquals("0.78.0", parsed.newVersion)
+        assertEquals(UpdateType.MINOR, parsed.updateType)
+    }
+
+    @Test
+    fun `single-segment bump is major via semver fallback`() {
+        // No explicit Update column — falls through to component comparison.
+        val parsed = RenovatePrParser.parse(
+            title = "Update actions/checkout action to v5",
+            body = "| Package | Change |\n|---|---|\n| checkout | [`v4` → `v5`](https://x) |",
+        )
+        assertEquals("4", parsed.currentVersion)
+        assertEquals("5", parsed.newVersion)
+        assertEquals(UpdateType.MAJOR, parsed.updateType)
+    }
+
+    @Test
+    fun `arrow in release notes does not override the table`() {
+        val body = """
+            | Package | Type | Update | Change |
+            |---|---|---|---|
+            | webpack | devDependencies | patch | [`5.108.1` → `5.108.4`](https://x) |
+
+            ---
+
+            ### Release Notes
+            Migrated the config: `oldApi` -> `9.9.9` in this release.
+        """.trimIndent()
+        val parsed = RenovatePrParser.parse("Update dependency webpack to v5.108.4", body)
+        assertEquals("5.108.1", parsed.currentVersion)
+        assertEquals("5.108.4", parsed.newVersion)
+        assertEquals(UpdateType.PATCH, parsed.updateType)
+    }
 }
