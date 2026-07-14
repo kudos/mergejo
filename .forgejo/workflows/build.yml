@@ -1,8 +1,9 @@
 name: Build APK
 
 # Nix-native pipeline (no Docker build image — that was an atomic-Fedora workaround in
-# inkventory). The self-hosted runner must have Nix with flakes enabled and enough
-# memory/swap for an Android build (the flake provides the SDK + JDKs; see flake.nix).
+# inkventory). Runs on the dedicated NixOS Forgejo runner `build-01` (label
+# `nix-host`), which has real Nix + flakes and ample RAM; the flake dev shell
+# provides the Android SDK + JDKs (see flake.nix).
 
 on:
   push:
@@ -10,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: nix-host
 
     steps:
       - name: Fix for bad os check
