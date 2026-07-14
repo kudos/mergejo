@@ -35,10 +35,16 @@ jobs:
         run: |
           set -euo pipefail
           APK=app/build/outputs/apk/debug/app-debug.apk
+          BENCH=app/build/outputs/apk/benchmark/app-benchmark.apk
 
           # Immutable per-commit artifact.
           curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
             -T "$APK" "$REG/${{ github.sha }}/gitops-debug.apk"
+
+          # Per-commit benchmark APK (profileable, R8-shrunk) for on-device
+          # macrobenchmarks — per-commit only, no rolling "latest".
+          curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
+            -T "$BENCH" "$REG/${{ github.sha }}/gitops-benchmark.apk"
 
           # Rolling "latest" on the default branch (replace the previous upload).
           if [ "${{ github.ref_name }}" = "$DEFAULT_BRANCH" ]; then
