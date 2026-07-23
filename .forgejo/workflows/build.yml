@@ -29,7 +29,7 @@ jobs:
       - name: Publish debug APK to the package registry
         if: ${{ github.event_name == 'push' }}
         env:
-          REG: https://cremin.dev/api/packages/${{ github.repository_owner }}/generic/gitops-android
+          REG: https://cremin.dev/api/packages/${{ github.repository_owner }}/generic/mergejo
           TOKEN: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
@@ -37,24 +37,35 @@ jobs:
           APK=app/build/outputs/apk/debug/app-debug.apk
           BENCH=app/build/outputs/apk/benchmark/app-benchmark.apk
 
+          # PUT an immutable artifact. Forgejo's generic registry rejects
+          # overwrites with 409, so a re-run on an already-published commit is a
+          # success (the immutable artifact is already there), not a failure.
+          put_immutable() {
+            local status
+            status=$(curl -sS -o /dev/null -w '%{http_code}' -X PUT \
+              -H "Authorization: token $TOKEN" -T "$1" "$2")
+            case "$status" in
+              2*)  echo "uploaded $2 ($status)" ;;
+              409) echo "already published $2 (409) — skipping" ;;
+              *)   echo "upload failed $2 ($status)" >&2; return 1 ;;
+            esac
+          }
+
           # Immutable per-commit artifact.
-          curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
-            -T "$APK" "$REG/${{ github.sha }}/gitops-debug.apk"
+          put_immutable "$APK" "$REG/${{ github.sha }}/mergejo-debug.apk"
 
           # Per-commit benchmark APK (profileable, R8-shrunk) for on-device
           # macrobenchmarks — per-commit only, no rolling "latest".
-          curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
-            -T "$BENCH" "$REG/${{ github.sha }}/gitops-benchmark.apk"
+          put_immutable "$BENCH" "$REG/${{ github.sha }}/mergejo-benchmark.apk"
 
           # Rolling "latest" on the default branch (replace the previous upload).
           if [ "${{ github.ref_name }}" = "$DEFAULT_BRANCH" ]; then
-            curl -sS -X DELETE -H "Authorization: token $TOKEN" "$REG/latest/gitops-debug.apk" || true
+            curl -sS -X DELETE -H "Authorization: token $TOKEN" "$REG/latest/mergejo-debug.apk" || true
             curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
-              -T "$APK" "$REG/latest/gitops-debug.apk"
+              -T "$APK" "$REG/latest/mergejo-debug.apk"
           fi
 
           # Tag builds get a tag-named artifact.
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            curl -sS --fail-with-body -X PUT -H "Authorization: token $TOKEN" \
-              -T "$APK" "$REG/${{ github.ref_name }}/gitops-${{ github.ref_name }}.apk"
+            put_immutable "$APK" "$REG/${{ github.ref_name }}/mergejo-${{ github.ref_name }}.apk"
           fi

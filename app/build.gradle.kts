@@ -31,11 +31,11 @@ val hasReleaseSigning = releaseStoreFile != null &&
     file(releaseStoreFile!!).exists()
 
 android {
-    namespace = "dev.cremin.gitops"
+    namespace = "dev.cremin.mergejo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "dev.cremin.gitops"
+        applicationId = "dev.cremin.mergejo"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

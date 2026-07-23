@@ -24,5 +24,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "gitops-android"
+rootProject.name = "mergejo"
 include(":app")

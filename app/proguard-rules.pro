@@ -2,11 +2,11 @@
 -dontnote kotlinx.serialization.AnnotationsKt
 
 # kotlinx.serialization — keep generated serializers + companions for our models.
--keep,includedescriptorclasses class dev.cremin.gitops.**$$serializer { *; }
--keepclassmembers class dev.cremin.gitops.** {
+-keep,includedescriptorclasses class dev.cremin.mergejo.**$$serializer { *; }
+-keepclassmembers class dev.cremin.mergejo.** {
     *** Companion;
 }
--keepclasseswithmembers class dev.cremin.gitops.** {
+-keepclasseswithmembers class dev.cremin.mergejo.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

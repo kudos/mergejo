@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GitOps</string>
+    <string name="app_name">Mergejo</string>
 
     <!-- Login -->
-    <string name="login_title">GitOps</string>
+    <string name="login_title">Mergejo</string>
     <string name="login_subtitle">Manage your Renovate pull requests</string>
     <string name="login_server_label">Forgejo server</string>
     <string name="login_sign_in">Sign in</string>

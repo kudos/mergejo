@@ -1,11 +1,11 @@
-# GitOps Android — agent notes
+# Mergejo — agent notes
 
-Native Android app to triage the **Renovate** dependency-update PRs on the self-hosted
+Mergejo (repo `mergejo`) is a native Android app to triage the **Renovate** dependency-update PRs on the self-hosted
 **Forgejo at `cremin.dev`**. One aggregated list across all `jonathan/*` repos, rich PR
 detail (version bump, CI status, release notes), and per-PR actions: merge / approve /
 rebase / close. Compose + Material 3, Hilt, Retrofit + kotlinx.serialization, DataStore.
 Single `:app` module, single Activity + NavHost, MVVM, repository-as-seam. `applicationId`
-`dev.cremin.gitops`.
+`dev.cremin.mergejo`.
 
 ## Build / run — nix-native (this box: NixOS, ~3.7 GB RAM)
 
@@ -33,7 +33,7 @@ nix develop -c ./gradlew testDebugUnitTest    # unit tests
 ## Auth — OAuth2 (Authorization Code + PKCE) via AppAuth
 
 1. Register an OAuth2 app at `https://cremin.dev/user/settings/applications`, redirect URI
-   `dev.cremin.gitops:/oauth2redirect`.
+   `dev.cremin.mergejo:/oauth2redirect`.
 2. Put the client id in `local.properties` as `OAUTH_CLIENT_ID=…` (read into `BuildConfig`).
    `FORGEJO_BASE_URL` defaults to `https://cremin.dev`.
 - AppAuth discovers endpoints from `/.well-known/openid-configuration`; Forgejo may SSO the
