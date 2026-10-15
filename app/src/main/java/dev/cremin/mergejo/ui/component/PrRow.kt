@@ -15,8 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.cremin.mergejo.R
 import dev.cremin.mergejo.domain.model.RenovatePr
 
 @Composable
@@ -51,7 +55,22 @@ fun PrRow(pr: RenovatePr, onClick: () -> Unit, modifier: Modifier = Modifier) {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (pr.additionalUpdateCount > 0) {
+                Text(
+                    text = pluralStringResource(R.plurals.list_more_packages, pr.additionalUpdateCount, pr.additionalUpdateCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            pr.primaryUpdate?.pending?.let {
+                Text(
+                    text = stringResource(R.string.detail_pending, it),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             Row(
@@ -59,7 +78,7 @@ fun PrRow(pr: RenovatePr, onClick: () -> Unit, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 CiStatusBadge(pr.ciStatus)
-                UpdateTypeChip(pr.updateType)
+                UpdateTypeChip(pr.updateType, label = pr.primaryUpdate?.updateLabel ?: pr.body.updates.firstOrNull()?.updateLabel)
                 if (pr.isSecurity) SecurityChip()
                 if (pr.rebaseRequested) RebasePendingChip()
                 if (pr.mergeable == false) {

@@ -149,4 +149,37 @@ class RenovatePrParserTest {
         assertEquals("5.108.4", parsed.newVersion)
         assertEquals(UpdateType.PATCH, parsed.updateType)
     }
+
+    @Test
+    fun `grouped PR takes the most significant row and keeps the structured body`() {
+        val body = """
+            | Package | Type | Update | Change |
+            |---|---|---|---|
+            | [vitest](https://x) | devDependencies | patch | [`3.1.0` → `3.1.1`](https://y) |
+            | [@vitest/coverage-v8](https://x) | devDependencies | major | [`2.1.9` → `3.1.1`](https://y) |
+
+            ---
+        """.trimIndent()
+        val parsed = RenovatePrParser.parse("Update vitest monorepo to v3.1.1", body)
+        assertEquals("vitest", parsed.dependency)
+        assertEquals(UpdateType.MAJOR, parsed.updateType)
+        assertEquals(2, parsed.body.updates.size)
+        assertEquals("3.1.0", parsed.currentVersion)
+    }
+
+    @Test
+    fun `security suffix in title marks the PR as security`() {
+        val parsed = RenovatePrParser.parse("Update dependency lodash to v4.17.21 [SECURITY]", "")
+        assertTrue(parsed.isSecurity)
+    }
+
+    @Test
+    fun `dependency falls back to the table when the title is unrecognised`() {
+        val parsed = RenovatePrParser.parse(
+            "chore(deps): bump things",
+            "| Package | Change |\n|---|---|\n| [left-pad](https://x) | `1.0.0` → `1.1.0` |",
+        )
+        assertEquals("left-pad", parsed.dependency)
+        assertEquals(UpdateType.MINOR, parsed.updateType)
+    }
 }

@@ -36,6 +36,8 @@ data class RenovatePr(
     val mergeable: Boolean?,
     val labels: List<String>,
     val bodyMarkdown: String,
+    /** [bodyMarkdown] parsed into Renovate's sections (table, notes, release notes, config). */
+    val body: RenovateBody,
     val rebaseRequested: Boolean,
 ) {
     val repoSlug: String get() = "$repoOwner/$repoName"
@@ -43,10 +45,24 @@ data class RenovatePr(
     /** Stable identity used for navigation and list keys. */
     val id: String get() = "$repoOwner/$repoName#$number"
 
+    /** The first table row with versions; grouped PRs list the rest in [body]. */
+    val primaryUpdate: DependencyUpdate?
+        get() = body.updates.firstOrNull { it.to != null }
+
+    /** Number of packages beyond the primary one in a grouped PR. */
+    val additionalUpdateCount: Int
+        get() = (body.updates.size - 1).coerceAtLeast(0)
+
+    /** Prefers Renovate's own spelling (`^0.78.0`, `v5`) over the normalised versions. */
     val versionChange: String?
-        get() = when {
-            currentVersion != null && newVersion != null -> "$currentVersion → $newVersion"
-            else -> newVersion
+        get() {
+            val primary = primaryUpdate
+            return when {
+                primary?.from != null -> "${primary.from} → ${primary.to}"
+                primary != null -> primary.to
+                currentVersion != null && newVersion != null -> "$currentVersion → $newVersion"
+                else -> newVersion
+            }
         }
 
     companion object {

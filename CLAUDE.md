@@ -47,7 +47,8 @@ data/auth/          AppAuth wrapper (AuthManager), encrypted store, OkHttp AuthI
 data/remote/{api,dto}/   ForgejoApi (Retrofit) + Gitea/Forgejo DTOs (JsonNamingStrategy.SnakeCase)
 data/repository/    RenovateRepository — the seam: aggregate → filter head.ref renovate/ → enrich (CI) → actions
 data/preferences/   SettingsRepository (DataStore)
-domain/             RenovatePrParser (title/body → update type, versions, security), RebaseCheckbox
+domain/             RenovateBodyParser (body → RenovateBody: table rows, notices, advisories, per-release notes, config),
+                    RenovatePrParser (PR-level summary on top of it), RenovateMarkdown (cleanup for the renderer), RebaseCheckbox
 ui/screen/{login,list,detail,settings}/   Screen + ViewModel each; ui/navigation, ui/component
 di/                 NetworkModule, AuthModule
 ```
@@ -55,7 +56,11 @@ di/                 NetworkModule, AuthModule
 ## Conventions
 
 - Renovate PRs are identified by the **`renovate/` head-branch prefix** (no labels are configured
-  on cremin.dev). Update type is parsed heuristically from the PR title + body change table.
+  on cremin.dev). The body is parsed into structured data (`RenovateBody`) by locating Renovate's template
+  anchors (table separator, `### Release Notes`, `### Configuration`), not by splitting on `---` — changelogs
+  contain their own rules and nested `<details>`. The detail screen renders from `RenovateBody`; raw markdown
+  is only shown when the body isn't Renovate's template. Parser fixtures (real bodies) live in
+  `app/src/test/resources/renovate/`.
 - Merge/close hit the **issues** endpoint (PRs are issues); rebase ticks Renovate's
   `<!-- rebase-check -->` checkbox in the PR body (effect applies on Renovate's next 4-hourly run).
 - Keep the `:app`-only, repository-as-seam, KSP-only, strings-in-`res/values` conventions.

@@ -48,9 +48,37 @@
     <string name="confirm_merge_title">Merge this PR?</string>
     <string name="confirm_close_title">Close this PR?</string>
     <string name="confirm_close_message">Renovate will treat it as ignored until you restore it from the Dependency Dashboard.</string>
+    <string name="confirm_close_message_immortal">This PR is immortal: Renovate will recreate it on its next run. Change its config to stop the update.</string>
     <string name="rebase_requested">Renovate will rebase this PR on its next run.</string>
     <string name="action_approved">Approved</string>
     <string name="action_failed">Action failed: %1$s</string>
+    <string name="detail_description">Description</string>
+    <string name="detail_advisories">Security advisories</string>
+    <string name="detail_pending">Newer version pending: %1$s</string>
+    <string name="detail_renovate">Renovate</string>
+    <plurals name="detail_updates">
+        <item quantity="one">Update</item>
+        <item quantity="other">%1$d updates</item>
+    </plurals>
+    <plurals name="detail_show_more_releases">
+        <item quantity="one">Show %1$d more release</item>
+        <item quantity="other">Show %1$d more releases</item>
+    </plurals>
+    <plurals name="list_more_packages">
+        <item quantity="one">+%1$d more package</item>
+        <item quantity="other">+%1$d more packages</item>
+    </plurals>
+    <string name="link_package">Package</string>
+    <string name="link_source">Source</string>
+    <string name="link_diff">Diff</string>
+    <string name="link_release">Release</string>
+    <string name="link_compare">Compare</string>
+    <string name="config_automerge">Automerge</string>
+    <string name="config_schedule">Schedule</string>
+    <string name="config_rebasing">Rebasing</string>
+    <string name="config_enabled">Enabled</string>
+    <string name="config_disabled">Disabled — merge manually</string>
+    <string name="config_immortal">Renovate recreates this PR if it’s closed without merging.</string>
     <string name="detail_not_found">This PR is no longer available.</string>
     <string name="detail_no_checks">No CI checks reported.</string>
 
@@ -66,5 +94,7 @@
     <string name="back">Back</string>
     <string name="cancel">Cancel</string>
     <string name="retry">Retry</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
     <string name="settings">Settings</string>
 </resources>

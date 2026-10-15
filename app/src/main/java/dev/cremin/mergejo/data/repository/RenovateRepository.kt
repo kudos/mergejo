@@ -17,6 +17,7 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
 import retrofit2.HttpException
 import retrofit2.Response
@@ -129,7 +131,8 @@ class RenovateRepository @Inject constructor(
             ?.let { CiStatus.fromGiteaState(it) }
             ?: CiStatus.NONE
 
-        val parsed = RenovatePrParser.parse(dto.title, dto.body)
+        // Bodies can be hundreds of KB of changelog; keep the regex work off Main.
+        val parsed = withContext(Dispatchers.Default) { RenovatePrParser.parse(dto.title, dto.body) }
         return RenovatePr(
             repoOwner = owner,
             repoName = repo.name,
@@ -151,6 +154,7 @@ class RenovateRepository @Inject constructor(
             mergeable = dto.mergeable,
             labels = dto.labels.map { it.name },
             bodyMarkdown = dto.body,
+            body = parsed.body,
             rebaseRequested = RebaseCheckbox.isChecked(dto.body),
         )
     }

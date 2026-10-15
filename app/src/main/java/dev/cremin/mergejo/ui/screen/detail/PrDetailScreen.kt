@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mikepenz.markdown.m3.Markdown
 import dev.cremin.mergejo.R
+import dev.cremin.mergejo.domain.RenovateMarkdown
 import dev.cremin.mergejo.domain.model.CheckRun
 import dev.cremin.mergejo.domain.model.MergeStyle
 import dev.cremin.mergejo.domain.model.RenovatePr
@@ -141,7 +142,13 @@ fun PrDetailScreen(
         AlertDialog(
             onDismissRequest = { showCloseDialog = false },
             title = { Text(stringResource(R.string.confirm_close_title)) },
-            text = { Text(stringResource(R.string.confirm_close_message)) },
+            text = {
+                Text(
+                    stringResource(
+                        if (pr.body.config.immortal) R.string.confirm_close_message_immortal else R.string.confirm_close_message,
+                    ),
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showCloseDialog = false
@@ -164,10 +171,19 @@ private fun DetailContent(pr: RenovatePr, modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        val body = pr.body
         Text(pr.repoSlug, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(pr.title, style = MaterialTheme.typography.titleLarge)
-        pr.versionChange?.let {
-            Text(it, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        // A single update is fully described here; groups get the per-package cards below.
+        if (body.updates.size <= 1) {
+            pr.versionChange?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CiStatusBadge(pr.ciStatus)
@@ -186,18 +202,34 @@ private fun DetailContent(pr: RenovatePr, modifier: Modifier = Modifier) {
             null -> Unit
         }
 
+        if (body.advisories.isNotEmpty()) AdvisoriesSection(body.advisories)
+        body.notices.forEach { NoticeCard(it) }
+        if (body.updates.isNotEmpty()) {
+            HorizontalDivider()
+            UpdatesSection(body.updates)
+        }
+
         HorizontalDivider()
-        Text(stringResource(R.string.detail_checks), style = MaterialTheme.typography.titleMedium)
+        SectionHeader(stringResource(R.string.detail_checks))
         if (pr.checks.isEmpty()) {
             Text(stringResource(R.string.detail_no_checks), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
             pr.checks.forEach { CheckRow(it) }
         }
 
-        if (pr.bodyMarkdown.isNotBlank()) {
+        if (body.releaseNotes.isNotEmpty()) {
             HorizontalDivider()
-            Text(stringResource(R.string.detail_release_notes), style = MaterialTheme.typography.titleMedium)
-            Markdown(content = pr.bodyMarkdown, modifier = Modifier.fillMaxWidth())
+            ReleaseNotesSection(body.releaseNotes)
+        }
+        if (!body.isStructured && pr.bodyMarkdown.isNotBlank()) {
+            // Not Renovate's template (or a format we don't know yet): show it as-is.
+            HorizontalDivider()
+            SectionHeader(stringResource(R.string.detail_description))
+            Markdown(content = RenovateMarkdown.clean(pr.bodyMarkdown), modifier = Modifier.fillMaxWidth())
+        }
+        if (body.config.settings.isNotEmpty()) {
+            HorizontalDivider()
+            RenovateConfigSection(body.config)
         }
     }
 }

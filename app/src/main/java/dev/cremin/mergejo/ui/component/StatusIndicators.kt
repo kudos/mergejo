@@ -41,16 +41,16 @@ private fun LabelPill(text: String, color: Color, modifier: Modifier = Modifier)
 }
 
 @Composable
-fun UpdateTypeChip(updateType: UpdateType, modifier: Modifier = Modifier) {
-    val (label, color) = when (updateType) {
+fun UpdateTypeChip(updateType: UpdateType, modifier: Modifier = Modifier, label: String? = null) {
+    val (text, color) = when (updateType) {
         UpdateType.MAJOR -> "major" to Red
         UpdateType.MINOR -> "minor" to Amber
         UpdateType.PATCH -> "patch" to Green
         UpdateType.DIGEST -> "digest" to Purple
         UpdateType.PIN -> "pin" to Purple
-        UpdateType.OTHER -> "update" to MaterialTheme.colorScheme.secondary
+        UpdateType.OTHER -> (label ?: "update") to MaterialTheme.colorScheme.secondary
     }
-    LabelPill(text = label, color = color, modifier = modifier)
+    LabelPill(text = text, color = color, modifier = modifier)
 }
 
 @Composable
