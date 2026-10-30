@@ -1,0 +1,1 @@
+• Finds Renovate PRs in all your repositories. Previously only the first 50 repositories, and the first 50 open PRs in each, were checked.
