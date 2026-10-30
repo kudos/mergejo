@@ -1,0 +1,1 @@
+Triage Renovate dependency-update pull requests on any Forgejo server

@@ -1,0 +1,18 @@
+Mergejo is for working through the dependency-update pull requests that Renovate opens on a Forgejo server. It gathers the open Renovate PRs from every repository you can access into one list. For each PR it shows what changed, whether CI passed and what the release notes say, so you can merge, approve, rebase or close it without opening a browser.
+
+<b>Features</b>
+<ul>
+<li>One list across all your repositories, with security updates first. Filter by CI result, security, or major, minor and patch updates.</li>
+<li>A detail view built from Renovate's PR description: the packages and versions changing, security advisories, release notes for each version, links to the source and diff, and Renovate's schedule and automerge settings.</li>
+<li>CI status for each PR, with every check listed.</li>
+<li>Merge (merge commit, squash or rebase), approve, ask Renovate to rebase, or close.</li>
+<li>Optional notifications for new Renovate PRs. Mergejo checks in the background at an interval you choose, from every 15 minutes to once a day. Off by default.</li>
+</ul>
+
+<b>Requirements</b>
+<ul>
+<li>A Forgejo server where Renovate opens pull requests. Mergejo recognises them by their <i>renovate/</i> branch names.</li>
+<li>A Forgejo personal access token with the read:user, write:repository and write:issue scopes. Mergejo talks only to the server you enter.</li>
+</ul>
+
+Mergejo is an independent project and is not affiliated with or endorsed by the Forgejo project. Its logo is an unofficial modification of the Forgejo logo by Caesar Schinas, licensed under CC BY-SA 4.0.

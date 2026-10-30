@@ -17,36 +17,37 @@ so you can merge, approve, rebase or close it without opening a browser.
 ## Screenshots
 
 <!--
-  Phone screenshots live in docs/screenshots/ (PNG, portrait, straight from the device).
-  To add or reorder one, edit the table below; each cell is one screenshot plus a caption.
+  Phone screenshots live in fastlane/metadata/android/en-US/images/phoneScreenshots/ (PNG,
+  portrait, straight from the device), where F-Droid also reads them; files are numbered in
+  store order. To add or reorder one, rename the files and edit the table below to match.
 -->
 
 <table>
   <tr>
     <td align="center" width="33%">
-      <img src="docs/screenshots/list.png" alt="PR list" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="PR list" width="250"><br>
       <sub>Every open Renovate PR in one list, security updates first</sub>
     </td>
     <td align="center" width="33%">
-      <img src="docs/screenshots/list-filtered.png" alt="PR list with a filter applied" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="PR list with a filter applied" width="250"><br>
       <sub>Filter by CI result, security or update type</sub>
     </td>
     <td align="center" width="33%">
-      <img src="docs/screenshots/detail.png" alt="PR detail" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="PR detail" width="250"><br>
       <sub>Version changes, CI checks and Renovate's config</sub>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="docs/screenshots/release-notes.png" alt="Release notes" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Release notes" width="250"><br>
       <sub>Release notes for each version in the jump</sub>
     </td>
     <td align="center">
-      <img src="docs/screenshots/merge.png" alt="Merge confirmation" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Merge confirmation" width="250"><br>
       <sub>Merge with your choice of merge style</sub>
     </td>
     <td align="center">
-      <img src="docs/screenshots/login.png" alt="Sign-in screen" width="250"><br>
+      <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="Sign-in screen" width="250"><br>
       <sub>Sign in to any Forgejo server with an access token</sub>
     </td>
   </tr>
@@ -152,6 +153,7 @@ app/src/main/java/dev/cremin/mergejo/
   ui/screen/          login, list, detail, settings (Screen + ViewModel each)
   di/                 Hilt modules
 branding/             wordmark and logo sources (SVG, CC BY-SA 4.0; see branding/README.md)
+fastlane/             store listing read by F-Droid: descriptions, icon, screenshots, changelogs
 ```
 
 The parser tests run against real Renovate PR bodies saved in
