@@ -88,6 +88,7 @@
     <string name="settings_default_merge_style">Default merge style</string>
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_version">Version</string>
+    <string name="settings_logo_credit">The Mergejo logo is an unofficial modification of the Forgejo logo by Caesar Schinas, licensed under CC BY-SA 4.0. Mergejo is not affiliated with the Forgejo project.</string>
     <string name="settings_notifications">New PR notifications</string>
     <string name="settings_notifications_help">Checks for new Renovate PRs in the background. Android may delay checks to save battery.</string>
     <string name="settings_notifications_blocked">Notifications are turned off for Mergejo in system settings.</string>

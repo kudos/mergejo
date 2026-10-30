@@ -122,6 +122,11 @@ fun SettingsScreen(
             HorizontalDivider()
 
             LabeledValue(stringResource(R.string.settings_version), viewModel.versionName)
+            Text(
+                text = stringResource(R.string.settings_logo_credit),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = viewModel::signOut, modifier = Modifier.fillMaxWidth()) {

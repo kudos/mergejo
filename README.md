@@ -151,7 +151,7 @@ app/src/main/java/dev/cremin/mergejo/
   notifications/      background poll (WorkManager + Hilt): scheduler, worker, notifier
   ui/screen/          login, list, detail, settings (Screen + ViewModel each)
   di/                 Hilt modules
-branding/             wordmark and logo sources (SVG)
+branding/             wordmark and logo sources (SVG, CC BY-SA 4.0; see branding/README.md)
 ```
 
 The parser tests run against real Renovate PR bodies saved in
@@ -169,3 +169,15 @@ package registry.
 - Notifications come from polling, not push, so they arrive on the next check rather
   than straight away, and WorkManager won't check more often than every 15 minutes.
 - It can't act on several PRs at once or control Renovate's Dependency Dashboard.
+
+## License
+
+The code is released under the [MIT licence](LICENSE).
+
+The Mergejo logo and wordmark are an unofficial modification of the
+[Forgejo logo](https://codeberg.org/forgejo/governance/src/branch/main/branding#logo) by
+[Caesar Schinas](https://caesarschinas.com/), and like the original are licensed under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See
+[`branding/README.md`](branding/README.md) for details.
+
+Mergejo is an independent project. It is not affiliated with or endorsed by the Forgejo project.
