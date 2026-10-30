@@ -80,6 +80,16 @@ Canonical repo: `cremin.dev/jonathan/mergejo` (F-Droid builds from it). `github.
 push mirror from Forgejo, used for public issues because cremin.dev has registration disabled.
 Don't push to the mirror directly.
 
+## Releases
+
+Reproducible builds: F-Droid builds each `v<versionName>` tag and only publishes the developer-signed APK
+attached to the cremin.dev release as `mergejo-<versionName>.apk` (fdroiddata `Binaries` +
+`AllowedAPKSigningKeys`). The Nix build is byte-identical to F-Droid's Debian/JDK 21 build except
+`META-INF/version-control-info.textproto`, which AGP only fills in from a normal git checkout — so build
+releases from a clean checkout of the tag, never a worktree. Signing is Gradle's `release` signingConfig from
+`local.properties` (`RELEASE_*`); don't switch to `apksigner` from build-tools 35+ (F-Droid can't verify it).
+Release steps are in the README.
+
 ## CI
 
 `.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`

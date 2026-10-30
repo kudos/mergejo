@@ -84,7 +84,12 @@ so you can merge, approve, rebase or close it without opening a browser.
 
 ## Install
 
-CI publishes an APK for every commit to the generic package registry on `cremin.dev`:
+Signed releases are attached to each version on the
+[releases page](https://cremin.dev/jonathan/mergejo/releases). The same APKs, with the same
+signature, are what F-Droid publishes once Mergejo is accepted there, so you can switch between
+the two without reinstalling.
+
+CI also publishes a test APK for every commit to the generic package registry on `cremin.dev`:
 
 ```
 https://cremin.dev/api/packages/jonathan/generic/mergejo/<commit-sha>/mergejo.apk         # release-shaped
@@ -93,6 +98,7 @@ https://cremin.dev/api/packages/jonathan/generic/mergejo/<commit-sha>/mergejo-de
 
 `mergejo.apk` is the R8-minified `benchmark` build. It is signed with the debug key so it
 installs without the release keystore. Tagged builds are published as `mergejo-<tag>.apk`.
+These are for testing and can't update a signed release install, or the reverse.
 
 The app ID is `dev.cremin.mergejo`. Debug and benchmark builds add `.debug` and
 `.benchmark` suffixes, so all three can be installed side by side. Android 8.0 (API 26)
@@ -164,6 +170,25 @@ The parser tests run against real Renovate PR bodies saved in
 `.forgejo/workflows/build.yml` runs on a self-hosted NixOS Forgejo runner with no Docker.
 It runs the unit tests, builds the debug and benchmark APKs, and publishes both to the
 package registry.
+
+## Releasing
+
+Releases are [reproducible](https://f-droid.org/docs/Reproducible_Builds/). F-Droid builds each
+tag itself, checks the result matches the signed APK attached to the release byte for byte,
+and then publishes that signed APK.
+
+1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`, and add
+   `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` (500 characters at most).
+2. Commit, tag `v<versionName>` on that commit, and push the commit and the tag.
+3. From a clean, normal checkout of the tag (not a git worktree, since AGP records the commit in
+   the APK), build the signed APK with the release keystore configured in `local.properties`:
+   `nix develop -c ./gradlew clean assembleRelease`.
+4. Create the release for the tag on `cremin.dev` and attach
+   `app/build/outputs/apk/release/app-release.apk` as `mergejo-<versionName>.apk`.
+
+F-Droid notices new tags on its own (`UpdateCheckMode: Tags`). It fetches the APK from
+`https://cremin.dev/jonathan/mergejo/releases/download/v<versionName>/mergejo-<versionName>.apk`,
+so the file name matters.
 
 ## Limitations
 
