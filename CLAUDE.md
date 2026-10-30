@@ -7,9 +7,9 @@ rebase / close. Compose + Material 3, Hilt, Retrofit + kotlinx.serialization, Da
 Single `:app` module, single Activity + NavHost, MVVM, repository-as-seam. `applicationId`
 `dev.cremin.mergejo`.
 
-## Build / run — nix-native (this box: NixOS, ~3.7 GB RAM)
+## Build / run — nix-native
 
-Everything goes through the flake dev shell; there is no global JDK/SDK/Gradle.
+Everything goes through the flake dev shell; the build doesn't rely on a global JDK/SDK/Gradle.
 
 ```sh
 nix develop -c ./gradlew assembleDebug        # build debug APK
@@ -23,27 +23,27 @@ nix develop -c ./gradlew testDebugUnitTest    # unit tests
 - **aapt2**: NixOS can't run AGP's Maven aapt2. The flake sets
   `GRADLE_OPTS=-Dorg.gradle.project.android.aapt2FromMavenOverride=$SDK/build-tools/35.0.0/aapt2`
   so AGP uses the patched SDK aapt2. Don't remove this or resource processing fails.
-- **Memory**: this box has ~3.7 GB RAM. `gradle.properties` caps the heap at 1536m with
-  no daemon / no parallel workers / Kotlin in-process. Android compilation still needs
-  swap — there's a 6 GB swapfile at `/var/gitops-build-swap` (ephemeral; recreate with
-  `sudo fallocate -l 6G /var/gitops-build-swap && sudo chmod 600 … && sudo mkswap … && sudo swapon …`,
-  or make it declarative in the NixOS config). Without swap `compileDebugKotlin` gets OOM-killed.
+- **Memory**: `gradle.properties` keeps the build in one 1536m JVM (no daemon, no parallel
+  workers, Kotlin in-process). Per-machine overrides belong in `~/.gradle/gradle.properties`,
+  not here.
 - Kotlin block comments **nest**: never put a bare `/*` (e.g. `renovate/*`) inside a KDoc.
 
-## Auth — OAuth2 (Authorization Code + PKCE) via AppAuth
+## Auth — personal access token
 
-1. Register an OAuth2 app at `https://cremin.dev/user/settings/applications`, redirect URI
-   `dev.cremin.mergejo:/oauth2redirect`.
-2. Put the client id in `local.properties` as `OAUTH_CLIENT_ID=…` (read into `BuildConfig`).
-   `FORGEJO_BASE_URL` defaults to `https://cremin.dev`.
-- AppAuth discovers endpoints from `/.well-known/openid-configuration`; Forgejo may SSO the
-  login through Pocket ID (`id.cremin.app`). Tokens are Forgejo tokens used as
-  `Authorization: Bearer` against `/api/v1`. `AuthState` is persisted in EncryptedSharedPreferences.
+- Login is server URL + Forgejo personal access token (scopes `read:user`, `write:repository`,
+  `write:issue`); no OAuth, no build-time client id. `FORGEJO_BASE_URL` in `local.properties`
+  only sets the prefilled server URL (default `https://cremin.dev`).
+- `AuthManager` signs in in two phases: `stage` the entered credentials, validate with
+  `GET /api/v1/user`, then `confirm` (persist) or `rollback`. Both are stored in
+  EncryptedSharedPreferences (`CredentialStore`).
+- `AuthInterceptor` rewrites each request's scheme/host/port to the configured server and adds
+  `Authorization: token <token>`, so any Forgejo instance works without rebuilding (assumes the
+  instance is served at the host root, no path prefix).
 
 ## Layout
 
 ```
-data/auth/          AppAuth wrapper (AuthManager), encrypted store, OkHttp AuthInterceptor
+data/auth/          AuthManager (credentials + sign-in state), CredentialStore, OkHttp AuthInterceptor
 data/remote/{api,dto}/   ForgejoApi (Retrofit) + Gitea/Forgejo DTOs (JsonNamingStrategy.SnakeCase)
 data/repository/    RenovateRepository — the seam: aggregate → filter head.ref renovate/ → enrich (CI) → actions
 data/preferences/   SettingsRepository (DataStore)
@@ -68,5 +68,7 @@ di/                 NetworkModule, AuthModule
 
 ## CI
 
-`.forgejo/workflows/build.yml` runs `nix develop -c ./gradlew testDebugUnitTest assembleDebug`
-on a self-hosted runner (needs Nix with flakes) — no Docker.
+`.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`
+on the self-hosted NixOS runner (label `nix-host`, needs Nix with flakes) — no Docker — then publishes
+`mergejo-debug.apk` and `mergejo.apk` (benchmark) to the generic package registry under
+`generic/mergejo/<sha>/`.
