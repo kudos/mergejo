@@ -116,7 +116,7 @@ The token is stored in `EncryptedSharedPreferences` and sent as `Authorization: 
 ## Building
 
 The build is Nix-native: the flake's dev shell provides the Android SDK (platform 35,
-build-tools 35.0.0) and JDKs 17 and 21. You don't need a system JDK, Android Studio or
+build-tools 35.0.0) and JDK 21. You don't need a system JDK, Android Studio or
 global Gradle.
 
 ```sh

@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
@@ -90,8 +91,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Target Java 17 bytecode from whatever JDK runs Gradle (no toolchain), so the build
+    // works on hosts that only ship a newer JDK, e.g. F-Droid's Debian build server (JDK 21).
     kotlin {
-        jvmToolchain(17)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 
     buildFeatures {

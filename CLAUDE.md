@@ -17,9 +17,10 @@ nix develop -c ./gradlew installDebug         # install on attached device/emula
 nix develop -c ./gradlew testDebugUnitTest    # unit tests
 ```
 
-- `flake.nix` provides the Android SDK (platform 35, build-tools 35.0.0), `jdk21`
-  (Gradle daemon) and `jdk17` (Kotlin/AGP toolchain, via `JDK_17`/`JDK_21` +
-  `org.gradle.java.installations.fromEnv`). No foojay downloads.
+- `flake.nix` provides the Android SDK (platform 35, build-tools 35.0.0) and `jdk21`. There are no
+  Java toolchains: the build compiles with the JDK running Gradle and targets Java 17 bytecode
+  (`compileOptions` + Kotlin `jvmTarget`). Don't reintroduce `jvmToolchain(17)`: F-Droid's build
+  server only has JDK 21, and JDK auto-download is off.
 - **aapt2**: NixOS can't run AGP's Maven aapt2. The flake sets
   `GRADLE_OPTS=-Dorg.gradle.project.android.aapt2FromMavenOverride=$SDK/build-tools/35.0.0/aapt2`
   so AGP uses the patched SDK aapt2. Don't remove this or resource processing fails.

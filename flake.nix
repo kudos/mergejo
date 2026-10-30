@@ -29,7 +29,6 @@
         buildInputs = [
           android.androidsdk
           pkgs.jdk21
-          pkgs.jdk17
         ];
 
         ANDROID_HOME = sdk;
@@ -42,12 +41,6 @@
         # `nix develop` invocation (local + CI) without baking a /nix/store path into a
         # tracked file.
         GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdk}/build-tools/${buildToolsVersion}/aapt2";
-
-        # Gradle sees both JDKs via JDK_17 / JDK_21 (daemon runs on 21, Kotlin toolchain on 17).
-        shellHook = ''
-          export JDK_17="${pkgs.jdk17}/lib/openjdk"
-          export JDK_21="${pkgs.jdk21}/lib/openjdk"
-        '';
       };
     };
 }
