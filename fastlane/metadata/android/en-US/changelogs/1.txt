@@ -2,4 +2,3 @@ First release.
 • One list of open Renovate PRs across all your repositories, with filters
 • PR detail: version changes, CI checks, advisories and release notes
 • Merge, approve, rebase or close
-• Optional background notifications for new PRs
