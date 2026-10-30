@@ -32,7 +32,7 @@ nix develop -c ./gradlew testDebugUnitTest    # unit tests
 
 - Login is server URL + Forgejo personal access token (scopes `read:user`, `write:repository`,
   `write:issue`); no OAuth, no build-time client id. `FORGEJO_BASE_URL` in `local.properties`
-  only sets the prefilled server URL (default `https://cremin.dev`).
+  only sets the prefilled server URL (default `https://codeberg.org`).
 - `AuthManager` signs in in two phases: `stage` the entered credentials, validate with
   `GET /api/v1/user`, then `confirm` (persist) or `rollback`. Both are stored in
   EncryptedSharedPreferences (`CredentialStore`).

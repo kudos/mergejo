@@ -101,7 +101,7 @@ or newer is required.
 
 Mergejo uses a Forgejo personal access token. It doesn't use OAuth.
 
-1. On the sign-in screen, enter your Forgejo server URL. It defaults to `https://cremin.dev`.
+1. On the sign-in screen, enter your Forgejo server URL. It defaults to `https://codeberg.org`.
 2. Tap **Create a token…** to open your server's
    *Settings → Applications* page. Create a token with these scopes:
    - `read:user` — so Mergejo can check the token and show who you are
@@ -129,7 +129,7 @@ Optional settings go in `local.properties`, which isn't committed:
 
 | Key | Purpose |
 | --- | --- |
-| `FORGEJO_BASE_URL` | Server URL prefilled on the sign-in screen (default `https://cremin.dev`) |
+| `FORGEJO_BASE_URL` | Server URL prefilled on the sign-in screen (default `https://codeberg.org`) |
 | `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` | Release signing; if any is missing, release builds are unsigned |
 
 On NixOS, the flake points AGP at the SDK's `aapt2`, because the `aapt2` that AGP downloads

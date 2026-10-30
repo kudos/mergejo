@@ -17,7 +17,7 @@ val localProps = Properties().apply {
 fun localOr(key: String, default: String): String = localProps.getProperty(key) ?: default
 
 // Default server URL prefilled on the login screen (the user can change it there).
-val forgejoBaseUrl = localOr("FORGEJO_BASE_URL", "https://cremin.dev")
+val forgejoBaseUrl = localOr("FORGEJO_BASE_URL", "https://codeberg.org")
 
 // Optional release signing (mirrors inkventory: keys live in local.properties).
 val releaseStoreFile: String? = localProps.getProperty("RELEASE_STORE_FILE")
