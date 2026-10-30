@@ -1,0 +1,1 @@
+• Packaging fix so the signed release passes F-Droid's checks. No changes to the app itself.
