@@ -97,8 +97,8 @@ https://cremin.dev/api/packages/jonathan/generic/mergejo/<commit-sha>/mergejo-de
 ```
 
 `mergejo.apk` is the R8-minified `benchmark` build. It is signed with the debug key so it
-installs without the release keystore. Tagged builds are published as `mergejo-<tag>.apk`.
-These are for testing and can't update a signed release install, or the reverse.
+installs without the release keystore. These are for testing and can't update a signed
+release install, or the reverse.
 
 The app ID is `dev.cremin.mergejo`. Debug and benchmark builds add `.debug` and
 `.benchmark` suffixes, so all three can be installed side by side. Android 8.0 (API 26)

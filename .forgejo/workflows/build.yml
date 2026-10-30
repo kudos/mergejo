@@ -27,6 +27,9 @@ jobs:
         run: nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark --no-daemon
 
       - name: Publish APKs to package registry
+        # Branch pushes only: a tag points at a commit main already published under the same
+        # <sha> path, and the registry rejects re-uploads with 409. Tags get a signed release.
+        if: github.ref_type != 'tag'
         run: |
           BASE="https://cremin.dev/api/packages/${{ github.repository_owner }}/generic/mergejo/${{ github.sha }}"
           AUTH="Authorization: token ${{ secrets.FORGEJO_REGISTRY_TOKEN }}"
@@ -35,7 +38,7 @@ jobs:
             "$BASE/mergejo-debug.apk"
           curl -sS --fail-with-body -X PUT -H "$AUTH" \
             -T app/build/outputs/apk/benchmark/app-benchmark.apk \
-            "$BASE/${{ github.ref_type == 'tag' && format('mergejo-{0}.apk', github.ref_name) || 'mergejo.apk' }}"
+            "$BASE/mergejo.apk"
 
   release:
     # Signed release for a v* tag: builds the reproducible release APK (F-Droid checks it against

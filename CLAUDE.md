@@ -97,4 +97,5 @@ passwords come from repo secrets; the release is created with the workflow's own
 `.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`
 on the self-hosted NixOS runner (label `nix-host`, needs Nix with flakes) — no Docker — then publishes
 `mergejo-debug.apk` and `mergejo.apk` (benchmark) to the generic package registry under
-`generic/mergejo/<sha>/`. On `v*` tags a second job, `release`, publishes the signed release (see Releases).
+`generic/mergejo/<sha>/` — branch pushes only, since a tag's commit is already published there and the registry
+answers re-uploads with 409. On `v*` tags a second job, `release`, publishes the signed release (see Releases).
