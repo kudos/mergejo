@@ -101,6 +101,14 @@ android {
         }
     }
 
+    // Signed APKs would otherwise carry a "Dependency metadata" signing block, encrypted for Google
+    // Play. F-Droid's scanner rejects it because nobody else can read it. Unsigned builds never
+    // have it, so this doesn't affect reproducibility.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true

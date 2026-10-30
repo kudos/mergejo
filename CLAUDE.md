@@ -90,7 +90,9 @@ releases from a clean checkout of the tag, never a worktree. Signing is Gradle's
 `local.properties` or the environment (`RELEASE_*`); don't switch to `apksigner` from build-tools 35+ (F-Droid
 can't verify it). Pushing a `v*` tag runs CI's `release` job → `scripts/release.sh` (checks tag/versionName/changelog,
 builds, pins the signing cert fingerprint, creates the Forgejo release and attaches the APK; idempotent). Keystore and
-passwords come from repo secrets; the release is created with the workflow's own token. Release steps are in the README.
+passwords come from repo secrets; the release is created with the workflow's own token. `dependenciesInfo` is off in
+`app/build.gradle.kts`: F-Droid's CI scanner fails on the encrypted "Dependency metadata" signing block AGP otherwise
+adds to signed APKs. Release steps are in the README.
 
 ## CI
 
