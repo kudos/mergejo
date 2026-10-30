@@ -87,12 +87,14 @@ attached to the cremin.dev release as `mergejo-<versionName>.apk` (fdroiddata `B
 `AllowedAPKSigningKeys`). The Nix build is byte-identical to F-Droid's Debian/JDK 21 build except
 `META-INF/version-control-info.textproto`, which AGP only fills in from a normal git checkout — so build
 releases from a clean checkout of the tag, never a worktree. Signing is Gradle's `release` signingConfig from
-`local.properties` (`RELEASE_*`); don't switch to `apksigner` from build-tools 35+ (F-Droid can't verify it).
-Release steps are in the README.
+`local.properties` or the environment (`RELEASE_*`); don't switch to `apksigner` from build-tools 35+ (F-Droid
+can't verify it). Pushing a `v*` tag runs CI's `release` job → `scripts/release.sh` (checks tag/versionName/changelog,
+builds, pins the signing cert fingerprint, creates the Forgejo release and attaches the APK; idempotent). Keystore and
+passwords come from repo secrets; the release is created with the workflow's own token. Release steps are in the README.
 
 ## CI
 
 `.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`
 on the self-hosted NixOS runner (label `nix-host`, needs Nix with flakes) — no Docker — then publishes
 `mergejo-debug.apk` and `mergejo.apk` (benchmark) to the generic package registry under
-`generic/mergejo/<sha>/`.
+`generic/mergejo/<sha>/`. On `v*` tags a second job, `release`, publishes the signed release (see Releases).

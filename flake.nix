@@ -29,6 +29,7 @@
         buildInputs = [
           android.androidsdk
           pkgs.jdk21
+          pkgs.jq # scripts/release.sh
         ];
 
         ANDROID_HOME = sdk;

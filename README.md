@@ -180,11 +180,27 @@ and then publishes that signed APK.
 1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`, and add
    `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` (500 characters at most).
 2. Commit, tag `v<versionName>` on that commit, and push the commit and the tag.
-3. From a clean, normal checkout of the tag (not a git worktree, since AGP records the commit in
-   the APK), build the signed APK with the release keystore configured in `local.properties`:
-   `nix develop -c ./gradlew clean assembleRelease`.
-4. Create the release for the tag on `cremin.dev` and attach
-   `app/build/outputs/apk/release/app-release.apk` as `mergejo-<versionName>.apk`.
+
+CI then takes over. After the usual build and tests, the `release` job runs
+[`scripts/release.sh`](scripts/release.sh). The script checks that the tag matches `versionName`
+and the changelog exists. It builds and signs the release APK, and refuses to continue unless the
+APK is signed with the release key. Then it creates the Forgejo release, with the changelog as
+release notes, and attaches the APK as `mergejo-<versionName>.apk`. If the job fails, re-run it
+from the Actions tab; the script skips steps that are already done.
+
+The job needs three repository secrets (Settings → Actions → Secrets):
+
+| Secret | Value |
+| --- | --- |
+| `RELEASE_KEYSTORE_BASE64` | the keystore, base64-encoded (`base64 -w0 mergejo-release.jks`) |
+| `RELEASE_STORE_PASSWORD` | the keystore password |
+| `RELEASE_KEY_PASSWORD` | the key password |
+
+To release by hand instead, run the same script from a clean, normal checkout of the tag (not a
+git worktree, since AGP records the commit in the APK), with signing configured in
+`local.properties` and a Forgejo token that can write to the repository:
+`FORGEJO_TOKEN=… nix develop -c bash scripts/release.sh`. Without a token, it only builds and
+checks `mergejo-<versionName>.apk`.
 
 F-Droid notices new tags on its own (`UpdateCheckMode: Tags`). It fetches the APK from
 `https://cremin.dev/jonathan/mergejo/releases/download/v<versionName>/mergejo-<versionName>.apk`,

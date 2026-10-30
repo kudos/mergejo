@@ -20,11 +20,13 @@ fun localOr(key: String, default: String): String = localProps.getProperty(key) 
 // Default server URL prefilled on the login screen (the user can change it there).
 val forgejoBaseUrl = localOr("FORGEJO_BASE_URL", "https://codeberg.org")
 
-// Optional release signing (mirrors inkventory: keys live in local.properties).
-val releaseStoreFile: String? = localProps.getProperty("RELEASE_STORE_FILE")
-val releaseStorePassword: String? = localProps.getProperty("RELEASE_STORE_PASSWORD")
-val releaseKeyAlias: String? = localProps.getProperty("RELEASE_KEY_ALIAS")
-val releaseKeyPassword: String? = localProps.getProperty("RELEASE_KEY_PASSWORD")
+// Optional release signing: from local.properties, or the environment (CI's release job).
+// Without it, assembleRelease produces an unsigned APK, which is what F-Droid builds.
+fun localOrEnv(key: String): String? = localProps.getProperty(key) ?: System.getenv(key)
+val releaseStoreFile: String? = localOrEnv("RELEASE_STORE_FILE")
+val releaseStorePassword: String? = localOrEnv("RELEASE_STORE_PASSWORD")
+val releaseKeyAlias: String? = localOrEnv("RELEASE_KEY_ALIAS")
+val releaseKeyPassword: String? = localOrEnv("RELEASE_KEY_PASSWORD")
 val hasReleaseSigning = releaseStoreFile != null &&
     releaseStorePassword != null &&
     releaseKeyAlias != null &&
