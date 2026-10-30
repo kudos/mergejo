@@ -44,6 +44,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
@@ -122,11 +127,7 @@ fun SettingsScreen(
             HorizontalDivider()
 
             LabeledValue(stringResource(R.string.settings_version), viewModel.versionName)
-            Text(
-                text = stringResource(R.string.settings_logo_credit),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            LogoCredit()
 
             Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = viewModel::signOut, modifier = Modifier.fillMaxWidth()) {
@@ -232,6 +233,30 @@ private fun PollInterval.labelRes(): Int = when (this) {
     PollInterval.HOURS_12 -> R.string.poll_interval_12h
     PollInterval.HOURS_24 -> R.string.poll_interval_24h
 }
+
+/** CC BY-SA attribution for the logo, with the original author's name linking to their site. */
+@Composable
+private fun LogoCredit() {
+    val author = stringResource(R.string.logo_author_name)
+    val credit = stringResource(R.string.settings_logo_credit, author)
+    val linkStyles = TextLinkStyles(
+        style = SpanStyle(color = MaterialTheme.colorScheme.primary, textDecoration = TextDecoration.Underline),
+    )
+    val text = buildAnnotatedString {
+        append(credit)
+        val start = credit.indexOf(author)
+        if (start >= 0) {
+            addLink(LinkAnnotation.Url(LOGO_AUTHOR_URL, linkStyles), start, start + author.length)
+        }
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+private const val LOGO_AUTHOR_URL = "https://caesarschinas.com/"
 
 @Composable
 private fun LabeledValue(label: String, value: String) {
