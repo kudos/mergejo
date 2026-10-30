@@ -74,6 +74,12 @@ di/                 NetworkModule, AuthModule
   silent baseline. A notification tap passes the PR id to `MainActivity` (`EXTRA_PR_ID`) → `AppNavHost`.
 - Out of scope for v1 (clean seams exist): batch actions, Dependency Dashboard control.
 
+## Hosting
+
+Canonical repo: `cremin.dev/jonathan/mergejo` (F-Droid builds from it). `github.com/kudos/mergejo` is a
+push mirror from Forgejo, used for public issues because cremin.dev has registration disabled.
+Don't push to the mirror directly.
+
 ## CI
 
 `.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`

@@ -172,6 +172,13 @@ package registry.
   than straight away, and WorkManager won't check more often than every 15 minutes.
 - It can't act on several PRs at once or control Renovate's Dependency Dashboard.
 
+## Issues
+
+Report bugs and request features at
+[github.com/kudos/mergejo/issues](https://github.com/kudos/mergejo/issues). The GitHub
+repository is a mirror of the main one at [cremin.dev](https://cremin.dev/jonathan/mergejo),
+which doesn't accept new sign-ups.
+
 ## License
 
 The code is released under the [MIT licence](LICENSE).
