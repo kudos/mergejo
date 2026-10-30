@@ -1,10 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mergejo "M" mark; source: branding/mergejo-logo.svg -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
-    android:viewportHeight="108"
-    android:tint="#FFFFFF">
-  <path
-      android:fillColor="@android:color/white"
-      android:pathData="M54,36c-9.94,0-18,8.06-18,18s8.06,18,18,18s18,-8.06,18,-18S63.94,36,54,36zM54,67c-7.18,0-13,-5.82-13,-13s5.82,-13,13,-13s13,5.82,13,13S61.18,67,54,67z"/>
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.2416"
+        android:scaleY="0.2416"
+        android:translateX="20.176"
+        android:translateY="28.422">
+        <path
+            android:pathData="M60 170V60a40 40 0 0 1 80 0V115"
+            android:strokeColor="#2f7de1"
+            android:strokeWidth="23.4783" />
+        <path
+            android:pathData="M220 170V60a40 40 0 0 0 -80 0V115"
+            android:strokeColor="#1f9d55"
+            android:strokeWidth="23.4783" />
+        <path
+            android:pathData="M123.478 125a16.5217 16.5217 0 1 0 33.0434 0a16.5217 16.5217 0 1 0 -33.0434 0z"
+            android:strokeColor="#1f9d55"
+            android:strokeWidth="13.913" />
+        <path
+            android:pathData="M43.4783 180a16.5217 16.5217 0 1 0 33.0434 0a16.5217 16.5217 0 1 0 -33.0434 0z"
+            android:strokeColor="#2f7de1"
+            android:strokeWidth="13.913" />
+        <path
+            android:pathData="M203.478 180a16.5217 16.5217 0 1 0 33.0434 0a16.5217 16.5217 0 1 0 -33.0434 0z"
+            android:strokeColor="#1f9d55"
+            android:strokeWidth="13.913" />
+    </group>
 </vector>
