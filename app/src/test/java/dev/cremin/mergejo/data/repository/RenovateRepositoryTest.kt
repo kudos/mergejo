@@ -82,6 +82,52 @@ class RenovateRepositoryTest {
         assertTrue(pr.checks.isNotEmpty())
     }
 
+    @Test
+    fun `refresh follows Link headers across pages of repos and PRs`() = runBlocking {
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val url = request.requestUrl!!
+                val page = url.queryParameter("page")?.toInt() ?: 1
+                val path = url.encodedPath
+                fun page(body: String, hasNext: Boolean) = MockResponse()
+                    .setBody(body)
+                    .addHeader("Content-Type", "application/json")
+                    .apply {
+                        if (hasNext) addHeader("Link", "<${url.newBuilder().setQueryParameter("page", "${page + 1}").build()}>; rel=\"next\"")
+                    }
+                return when {
+                    path == "/api/v1/user/repos" -> when (page) {
+                        1 -> page("""[${repo("app")}]""", hasNext = true)
+                        else -> page("""[${repo("lib")}]""", hasNext = false)
+                    }
+                    path == "/api/v1/repos/jonathan/app/pulls" -> when (page) {
+                        1 -> page("[${renovatePr(1)}]", hasNext = true)
+                        else -> page("[${renovatePr(2)}]", hasNext = false)
+                    }
+                    path == "/api/v1/repos/jonathan/lib/pulls" -> page("[${renovatePr(3)}]", hasNext = false)
+                    path.endsWith("/status") -> page(STATUS_JSON, hasNext = false)
+                    else -> MockResponse().setResponseCode(404)
+                }
+            }
+        }
+
+        repository.refresh()
+
+        assertNull(repository.error.value)
+        assertEquals(
+            listOf("jonathan/app#1", "jonathan/app#2", "jonathan/lib#3"),
+            repository.pullRequests.value.map { it.id }.sorted(),
+        )
+    }
+
+    private fun repo(name: String) =
+        """{"id":${name.hashCode()},"name":"$name","full_name":"jonathan/$name","owner":{"login":"jonathan"},"archived":false}"""
+
+    private fun renovatePr(number: Int) = """
+        {"number":$number,"title":"Update dependency x to v$number","body":"","state":"open",
+         "user":{"login":"renovate"},"head":{"ref":"renovate/x-$number","sha":"sha$number"},"base":{"ref":"main"}}
+    """
+
     private companion object {
         const val REPOS_JSON =
             """[{"id":1,"name":"app","full_name":"jonathan/app","owner":{"login":"jonathan"},"archived":false}]"""

@@ -26,11 +26,12 @@ interface ForgejoApi {
     @GET("api/v1/user")
     suspend fun getAuthenticatedUser(): UserDto
 
+    /** One page; the `Link` header says whether there's a next one. */
     @GET("api/v1/user/repos")
     suspend fun listUserRepos(
         @Query("limit") limit: Int = 50,
         @Query("page") page: Int = 1,
-    ): List<RepoDto>
+    ): Response<List<RepoDto>>
 
     @GET("api/v1/repos/{owner}/{repo}/pulls")
     suspend fun listPulls(
@@ -39,7 +40,7 @@ interface ForgejoApi {
         @Query("state") state: String = "open",
         @Query("limit") limit: Int = 50,
         @Query("page") page: Int = 1,
-    ): List<PullRequestDto>
+    ): Response<List<PullRequestDto>>
 
     @GET("api/v1/repos/{owner}/{repo}/pulls/{index}")
     suspend fun getPull(

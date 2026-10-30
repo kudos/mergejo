@@ -46,7 +46,7 @@ nix develop -c ./gradlew testDebugUnitTest    # unit tests
 ```
 data/auth/          AuthManager (credentials + sign-in state), CredentialStore, OkHttp AuthInterceptor
 data/remote/{api,dto}/   ForgejoApi (Retrofit) + Gitea/Forgejo DTOs (JsonNamingStrategy.SnakeCase)
-data/repository/    RenovateRepository — the seam: aggregate → filter head.ref renovate/ → enrich (CI) → actions
+data/repository/    RenovateRepository — the seam: aggregate (every page, via Link rel="next") → filter head.ref renovate/ → enrich (CI) → actions
 data/preferences/   SettingsRepository (DataStore)
 domain/             RenovateBodyParser (body → RenovateBody: table rows, notices, advisories, per-release notes, config),
                     RenovatePrParser (PR-level summary on top of it), RenovateMarkdown (cleanup for the renderer), RebaseCheckbox,

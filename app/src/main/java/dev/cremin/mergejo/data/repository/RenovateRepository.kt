@@ -61,14 +61,14 @@ class RenovateRepository @Inject constructor(
         _error.value = null
         return try {
             val prs = coroutineScope {
-                val repos = api.listUserRepos(limit = 50).filterNot { it.archived }
+                val repos = allPages { page -> api.listUserRepos(page = page) }.filterNot { it.archived }
                 val gate = Semaphore(MAX_CONCURRENCY)
 
                 val renovatePrs = repos.map { repo ->
                     async {
                         gate.withPermit {
                             val owner = repo.ownerLogin()
-                            runCatching { api.listPulls(owner, repo.name, state = "open", limit = 50) }
+                            runCatching { allPages { page -> api.listPulls(owner, repo.name, state = "open", page = page) } }
                                 .getOrDefault(emptyList())
                                 .filter { it.head.ref.startsWith(RENOVATE_BRANCH_PREFIX) }
                                 .map { repo to it }
@@ -176,6 +176,26 @@ class RenovateRepository @Inject constructor(
         }
     }
 
+    /**
+     * Fetches every page of a Forgejo list endpoint. The server caps the page size
+     * (`MAX_RESPONSE_ITEMS`, 50 by default) whatever `limit` asks for, so follow its
+     * `Link: <…>; rel="next"` header instead of guessing from the page length.
+     */
+    private suspend fun <T> allPages(fetch: suspend (page: Int) -> Response<List<T>>): List<T> {
+        val items = mutableListOf<T>()
+        var page = 1
+        while (true) {
+            val response = fetch(page)
+            if (!response.isSuccessful) throw HttpException(response)
+            items += response.body().orEmpty()
+            if (!response.hasNextPage() || page >= MAX_PAGES) return items
+            page++
+        }
+    }
+
+    private fun Response<*>.hasNextPage(): Boolean =
+        headers().values("Link").any { it.contains("rel=\"next\"") }
+
     private fun RepoDto.ownerLogin(): String = owner?.login ?: fullName.substringBefore('/')
 
     private fun Response<*>.asResult(): Result<Unit> = if (isSuccessful) {
@@ -196,5 +216,8 @@ class RenovateRepository @Inject constructor(
     private companion object {
         const val RENOVATE_BRANCH_PREFIX = "renovate/"
         const val MAX_CONCURRENCY = 6
+
+        /** Safety stop for a server that keeps sending `rel="next"` (50 × 40 = 2000 items). */
+        const val MAX_PAGES = 40
     }
 }

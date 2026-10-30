@@ -208,7 +208,6 @@ so the file name matters.
 
 ## Limitations
 
-- Mergejo checks at most 50 repositories, and at most 50 open PRs in each repository.
 - Notifications come from polling, not push, so they arrive on the next check rather
   than straight away, and WorkManager won't check more often than every 15 minutes.
 - It can't act on several PRs at once or control Renovate's Dependency Dashboard.
