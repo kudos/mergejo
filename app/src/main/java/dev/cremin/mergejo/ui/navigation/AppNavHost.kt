@@ -15,8 +15,16 @@ import dev.cremin.mergejo.ui.screen.list.PrListScreen
 import dev.cremin.mergejo.ui.screen.login.LoginScreen
 import dev.cremin.mergejo.ui.screen.settings.SettingsScreen
 
+/**
+ * @param openPrId a PR to show on top of the list (from a tapped notification); [onPrOpened]
+ *   is called once it has been navigated to.
+ */
 @Composable
-fun AppNavHost(rootViewModel: RootViewModel = hiltViewModel()) {
+fun AppNavHost(
+    openPrId: String? = null,
+    onPrOpened: () -> Unit = {},
+    rootViewModel: RootViewModel = hiltViewModel(),
+) {
     val isAuthorized by rootViewModel.isAuthorized.collectAsStateWithLifecycle()
     val navController = rememberNavController()
 
@@ -32,6 +40,17 @@ fun AppNavHost(rootViewModel: RootViewModel = hiltViewModel()) {
             navController.navigate(Destinations.LIST) {
                 popUpTo(Destinations.LOGIN) { inclusive = true }
             }
+        }
+    }
+
+    // Waits for sign-in, so a notification tapped while signed out opens the PR afterwards.
+    LaunchedEffect(openPrId, isAuthorized) {
+        if (openPrId != null && isAuthorized) {
+            navController.navigate(Destinations.detail(openPrId)) {
+                popUpTo(Destinations.LIST)
+                launchSingleTop = true
+            }
+            onPrOpened()
         }
     }
 

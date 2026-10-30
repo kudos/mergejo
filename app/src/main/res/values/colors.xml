@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mergejo brand colours (see branding/). -->
+    <color name="brand_blue">#2F7DE1</color>
+    <color name="brand_green">#1F9D55</color>
+</resources>

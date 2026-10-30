@@ -48,7 +48,9 @@ data/remote/{api,dto}/   ForgejoApi (Retrofit) + Gitea/Forgejo DTOs (JsonNamingS
 data/repository/    RenovateRepository — the seam: aggregate → filter head.ref renovate/ → enrich (CI) → actions
 data/preferences/   SettingsRepository (DataStore)
 domain/             RenovateBodyParser (body → RenovateBody: table rows, notices, advisories, per-release notes, config),
-                    RenovatePrParser (PR-level summary on top of it), RenovateMarkdown (cleanup for the renderer), RebaseCheckbox
+                    RenovatePrParser (PR-level summary on top of it), RenovateMarkdown (cleanup for the renderer), RebaseCheckbox,
+                    NewPrDetector (which PRs a background poll should announce)
+notifications/      PrPollScheduler (unique periodic WorkManager job), PrPollWorker (@HiltWorker), PrNotifier
 ui/screen/{login,list,detail,settings}/   Screen + ViewModel each; ui/navigation, ui/component
 di/                 NetworkModule, AuthModule
 ```
@@ -64,7 +66,12 @@ di/                 NetworkModule, AuthModule
 - Merge/close hit the **issues** endpoint (PRs are issues); rebase ticks Renovate's
   `<!-- rebase-check -->` checkbox in the PR body (effect applies on Renovate's next 4-hourly run).
 - Keep the `:app`-only, repository-as-seam, KSP-only, strings-in-`res/values` conventions.
-- Out of scope for v1 (clean seams exist): notifications, batch actions, Dependency Dashboard control.
+- New-PR notifications are polling via WorkManager (no push), off by default; the interval lives in
+  `SettingsRepository`. WorkManager's default initializer is removed in the manifest so
+  `MergejoApplication` can supply `HiltWorkerFactory`. Seen PR ids are a union (not the last poll's
+  set) so a repo that fails to list once doesn't get its PRs re-announced; enabling starts from a
+  silent baseline. A notification tap passes the PR id to `MainActivity` (`EXTRA_PR_ID`) → `AppNavHost`.
+- Out of scope for v1 (clean seams exist): batch actions, Dependency Dashboard control.
 
 ## CI
 

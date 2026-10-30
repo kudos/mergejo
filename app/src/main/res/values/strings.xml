@@ -88,6 +88,27 @@
     <string name="settings_default_merge_style">Default merge style</string>
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_version">Version</string>
+    <string name="settings_notifications">New PR notifications</string>
+    <string name="settings_notifications_help">Checks for new Renovate PRs in the background. Android may delay checks to save battery.</string>
+    <string name="settings_notifications_blocked">Notifications are turned off for Mergejo in system settings.</string>
+    <string name="settings_notifications_open_system">Open notification settings</string>
+    <string name="poll_interval_off">Off</string>
+    <string name="poll_interval_15m">Every 15 minutes</string>
+    <string name="poll_interval_30m">Every 30 minutes</string>
+    <string name="poll_interval_1h">Every hour</string>
+    <string name="poll_interval_3h">Every 3 hours</string>
+    <string name="poll_interval_6h">Every 6 hours</string>
+    <string name="poll_interval_12h">Every 12 hours</string>
+    <string name="poll_interval_24h">Once a day</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_new_prs">New pull requests</string>
+    <string name="notification_channel_new_prs_description">New Renovate pull requests found by the background check</string>
+    <string name="notification_security">%1$s · Security update</string>
+    <plurals name="notification_new_prs">
+        <item quantity="one">%1$d new Renovate PR</item>
+        <item quantity="other">%1$d new Renovate PRs</item>
+    </plurals>
 
     <!-- Common -->
     <string name="back">Back</string>

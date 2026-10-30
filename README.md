@@ -74,6 +74,11 @@ so you can merge, approve, rebase or close it without opening a browser.
     on its next run.
   - **Close** asks for confirmation first. It warns you if the PR is *immortal*, meaning
     Renovate will open it again on its next run.
+- **New PR notifications** (off by default). In Settings, choose how often Mergejo checks
+  in the background, from every 15 minutes to once a day. Each new Renovate PR gets its own
+  notification, and tapping it opens that PR. The first check after you turn this on only
+  records the PRs that are already open, so you aren't notified about them. Android may delay
+  checks to save battery.
 - Material 3 with a dark theme, plus dynamic colour on Android 12 and newer.
 
 ## Install
@@ -142,7 +147,8 @@ app/src/main/java/dev/cremin/mergejo/
   data/remote/        ForgejoApi (Retrofit) + Forgejo DTOs
   data/repository/    RenovateRepository: gather → filter renovate/ branches → add CI status → actions
   data/preferences/   SettingsRepository (DataStore)
-  domain/             RenovateBodyParser, RenovatePrParser, RenovateMarkdown, RebaseCheckbox
+  domain/             RenovateBodyParser, RenovatePrParser, RenovateMarkdown, RebaseCheckbox, NewPrDetector
+  notifications/      background poll (WorkManager + Hilt): scheduler, worker, notifier
   ui/screen/          login, list, detail, settings (Screen + ViewModel each)
   di/                 Hilt modules
 branding/             wordmark and logo sources (SVG)
@@ -160,5 +166,6 @@ package registry.
 ## Limitations
 
 - Mergejo checks at most 50 repositories, and at most 50 open PRs in each repository.
-- It doesn't send notifications, act on several PRs at once, or control Renovate's
-  Dependency Dashboard.
+- Notifications come from polling, not push, so they arrive on the next check rather
+  than straight away, and WorkManager won't check more often than every 15 minutes.
+- It can't act on several PRs at once or control Renovate's Dependency Dashboard.

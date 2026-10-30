@@ -52,10 +52,14 @@ class RenovateRepository @Inject constructor(
 
     fun getById(id: String): RenovatePr? = _pullRequests.value.firstOrNull { it.id == id }
 
-    suspend fun refresh() {
+    /**
+     * Reloads every open Renovate PR into [pullRequests]. Also returns the outcome, for
+     * callers outside the UI (the background poll) that need to know whether it worked.
+     */
+    suspend fun refresh(): Result<List<RenovatePr>> {
         _isRefreshing.value = true
         _error.value = null
-        try {
+        return try {
             val prs = coroutineScope {
                 val repos = api.listUserRepos(limit = 50).filterNot { it.archived }
                 val gate = Semaphore(MAX_CONCURRENCY)
@@ -76,14 +80,17 @@ class RenovateRepository @Inject constructor(
                     async { gate.withPermit { buildPr(repo, dto) } }
                 }.awaitAll()
             }
-            _pullRequests.value = prs.sortedWith(
+            val sorted = prs.sortedWith(
                 compareByDescending<RenovatePr> { it.isSecurity }
                     .thenByDescending { it.createdAt },
             )
+            _pullRequests.value = sorted
+            Result.success(sorted)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             _error.value = e.toUserMessage()
+            Result.failure(e)
         } finally {
             _isRefreshing.value = false
         }
