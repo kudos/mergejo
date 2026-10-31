@@ -94,6 +94,13 @@ passwords come from repo secrets; the release is created with the workflow's own
 `app/build.gradle.kts`: F-Droid's CI scanner fails on the encrypted "Dependency metadata" signing block AGP otherwise
 adds to signed APKs. Release steps are in the README.
 
+Self-hosted F-Droid repo: the release job's last step runs `scripts/fdroid-repo.sh` in `nix develop .#release`
+(fdroidserver + rclone). It downloads the APKs from the latest 3 releases, writes throwaway `config.yml` and
+`metadata/` (store listing copied from `fastlane/`; a `Builds` entry per version only so fdroidserver attaches each
+changelog as "What's new"), runs `fdroid update --use-date-from-apk` (APK mtimes = release dates, so it's stateless),
+and `rclone sync`s `repo/` to the S3 bucket (RustFS). fdroidserver reads `repo_icon` relative to the working dir,
+not `repo/icons/`. Config is `FDROID_*` repo variables/secrets; the step is skipped while `FDROID_REPO_URL` is unset.
+
 ## CI
 
 `.forgejo/workflows/build.yml` runs `nix develop -c bash ./gradlew testDebugUnitTest assembleDebug assembleBenchmark`

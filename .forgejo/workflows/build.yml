@@ -69,3 +69,23 @@ jobs:
           trap 'rm -f "$RELEASE_STORE_FILE"' EXIT
           printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$RELEASE_STORE_FILE"
           nix develop -c bash scripts/release.sh
+
+      - name: Update the F-Droid repository
+        # Rebuilds the self-hosted F-Droid repository from the latest releases, including the one
+        # just published, and syncs it to the S3 bucket (scripts/fdroid-repo.sh). Skipped until the
+        # FDROID_* variables are set. The index signing key comes from FDROID_KEYSTORE_BASE64.
+        if: vars.FDROID_REPO_URL != ''
+        env:
+          FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+          FDROID_KEYSTORE_PASS: ${{ secrets.FDROID_KEYSTORE_PASS }}
+          FDROID_S3_ACCESS_KEY: ${{ secrets.FDROID_S3_ACCESS_KEY }}
+          FDROID_S3_SECRET_KEY: ${{ secrets.FDROID_S3_SECRET_KEY }}
+          FDROID_REPO_URL: ${{ vars.FDROID_REPO_URL }}
+          FDROID_S3_ENDPOINT: ${{ vars.FDROID_S3_ENDPOINT }}
+          FDROID_S3_BUCKET: ${{ vars.FDROID_S3_BUCKET }}
+          FORGEJO_API: ${{ github.server_url }}/api/v1/repos/${{ github.repository }}
+        run: |
+          export FDROID_KEYSTORE="$(mktemp)"
+          trap 'rm -f "$FDROID_KEYSTORE"' EXIT
+          printf '%s' "$FDROID_KEYSTORE_BASE64" | base64 -d > "$FDROID_KEYSTORE"
+          nix develop .#release -c bash scripts/fdroid-repo.sh

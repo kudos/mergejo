@@ -23,15 +23,9 @@
         useGoogleAPIs = false;
       };
       sdk = "${android.androidsdk}/libexec/android-sdk";
-    in
-    {
-      devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [
-          android.androidsdk
-          pkgs.jdk21
-          pkgs.jq # scripts/release.sh
-        ];
 
+      # Shared by both dev shells.
+      shellEnv = {
         ANDROID_HOME = sdk;
         ANDROID_SDK_ROOT = sdk;
         JAVA_HOME = "${pkgs.jdk21}/lib/openjdk";
@@ -42,6 +36,28 @@
         # `nix develop` invocation (local + CI) without baking a /nix/store path into a
         # tracked file.
         GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdk}/build-tools/${buildToolsVersion}/aapt2";
+      };
+      buildTools = [
+        android.androidsdk
+        pkgs.jdk21
+        pkgs.jq # scripts/release.sh
+      ];
+    in
+    {
+      devShells.${system} = {
+        default = pkgs.mkShell (shellEnv // { buildInputs = buildTools; });
+
+        # Release tooling on top (`nix develop .#release`): fdroidserver builds the self-hosted
+        # F-Droid repo and rclone uploads it to S3 (scripts/fdroid-repo.sh).
+        release = pkgs.mkShell (
+          shellEnv
+          // {
+            buildInputs = buildTools ++ [
+              pkgs.fdroidserver
+              pkgs.rclone
+            ];
+          }
+        );
       };
     };
 }

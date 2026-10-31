@@ -196,6 +196,31 @@ The job needs three repository secrets (Settings → Actions → Secrets):
 | `RELEASE_STORE_PASSWORD` | the keystore password |
 | `RELEASE_KEY_PASSWORD` | the key password |
 
+### Self-hosted F-Droid repository
+
+After publishing the release, the same job runs
+[`scripts/fdroid-repo.sh`](scripts/fdroid-repo.sh). It rebuilds a small F-Droid repository from
+the signed APKs on the latest three releases, signs its index with a separate repository key, and
+syncs it to an S3-compatible bucket. Each version's "added" date is its release date, and its
+"What's new" is its changelog. The repository is derived from the releases, so nothing is kept
+between runs. The step is skipped until it's configured:
+
+| Repository variable | Value |
+| --- | --- |
+| `FDROID_REPO_URL` | public URL of the repository, ending in `/repo` |
+| `FDROID_S3_ENDPOINT` | S3 API endpoint |
+| `FDROID_S3_BUCKET` | bucket; the repository goes under `repo/` |
+
+| Secret | Value |
+| --- | --- |
+| `FDROID_KEYSTORE_BASE64` | the repository signing keystore (PKCS12, alias `mergejo-repo`), base64-encoded |
+| `FDROID_KEYSTORE_PASS` | its password |
+| `FDROID_S3_ACCESS_KEY`, `FDROID_S3_SECRET_KEY` | credentials that can write to the bucket |
+
+The bucket needs anonymous read access (`s3:GetObject`) so F-Droid clients can download from it.
+To rebuild the repository by hand, run
+`nix develop .#release -c bash scripts/fdroid-repo.sh` with the same values in the environment.
+
 To release by hand instead, run the same script from a clean, normal checkout of the tag (not a
 git worktree, since AGP records the commit in the APK), with signing configured in
 `local.properties` and a Forgejo token that can write to the repository:
