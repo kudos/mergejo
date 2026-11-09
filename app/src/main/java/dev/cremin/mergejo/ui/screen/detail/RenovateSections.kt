@@ -244,8 +244,20 @@ private fun ReleaseCard(release: Release, initiallyExpanded: Boolean, key: Strin
 
 @Composable
 fun RenovateConfigSection(config: RenovateConfig) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SectionHeader(stringResource(R.string.detail_renovate))
+    // Renovate's own settings rarely change a merge decision, so they start collapsed.
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Column(Modifier.animateContentSize(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionHeader(stringResource(R.string.detail_renovate), Modifier.weight(1f))
+            Icon(
+                if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                contentDescription = stringResource(if (expanded) R.string.collapse else R.string.expand),
+            )
+        }
+        if (!expanded) return@Column
         config.automerge?.let {
             ConfigRow(
                 stringResource(R.string.config_automerge),
