@@ -16,6 +16,7 @@ import dev.cremin.mergejo.domain.model.MergeStyle
 import dev.cremin.mergejo.domain.model.PrComment
 import dev.cremin.mergejo.domain.model.RenovatePr
 import java.io.IOException
+import java.net.URI
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -148,7 +149,7 @@ class RenovateRepository @Inject constructor(
                 context = it.context,
                 description = it.description,
                 status = CiStatus.fromGiteaState(it.status),
-                targetUrl = it.targetUrl.ifBlank { null },
+                targetUrl = it.targetUrl.ifBlank { null }?.let { url -> resolveUrl(dto.htmlUrl, url) },
             )
         }
         val ciStatus = combined?.state?.takeIf { it.isNotBlank() }
@@ -190,6 +191,10 @@ class RenovateRepository @Inject constructor(
         updatedAt = updatedAt.toInstantOrNull(),
         blocks = CommentParser.parse(body),
     )
+
+    /** Forgejo Actions reports a status's target as a path on the server (`/owner/repo/actions/runs/…`). */
+    private fun resolveUrl(base: String, url: String): String? =
+        runCatching { URI(base).resolve(url).toString() }.getOrNull()?.takeIf { it.startsWith("http") }
 
     private fun String?.toInstantOrNull(): Instant? = this?.let { runCatching { Instant.parse(it) }.getOrNull() }
 

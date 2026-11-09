@@ -235,12 +235,18 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
 
 @Composable
 private fun CheckRow(check: CheckRun) {
+    val uriHandler = LocalUriHandler.current
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         CiStatusBadge(check.status)
         Column(Modifier.weight(1f)) {
             Text(check.context.ifBlank { "check" }, style = DetailText.body)
             if (check.description.isNotBlank()) {
                 Text(check.description, style = DetailText.secondary, color = DetailText.secondaryColor)
+            }
+        }
+        check.targetUrl?.let { url ->
+            IconButton(onClick = { runCatching { uriHandler.openUri(url) } }) {
+                Icon(Icons.Filled.OpenInNew, contentDescription = stringResource(R.string.detail_open_check))
             }
         }
     }

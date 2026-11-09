@@ -85,6 +85,16 @@ class RenovateRepositoryTest {
     }
 
     @Test
+    fun `check links on the server are made absolute`() = runBlocking {
+        repository.refresh()
+        val checks = repository.pullRequests.value.single().checks.associate { it.context to it.targetUrl }
+
+        assertEquals("https://cremin.dev/jonathan/app/actions/runs/7/jobs/0", checks["CI / build"])
+        assertEquals("https://ci.example.com/build/1", checks["external"])
+        assertNull(checks["ci/build"])
+    }
+
+    @Test
     fun `comments are parsed and empty ones dropped`() = runBlocking {
         repository.refresh()
         val comments = repository.comments(repository.pullRequests.value.single()).getOrThrow()
@@ -182,7 +192,12 @@ class RenovateRepositoryTest {
             ]
         """
 
-        const val STATUS_JSON =
-            """{"state":"success","sha":"abc123","total_count":1,"statuses":[{"status":"success","context":"ci/build","description":"passed"}]}"""
+        const val STATUS_JSON = """
+            {"state":"success","sha":"abc123","total_count":3,"statuses":[
+              {"status":"success","context":"ci/build","description":"passed"},
+              {"status":"success","context":"CI / build","target_url":"/jonathan/app/actions/runs/7/jobs/0"},
+              {"status":"success","context":"external","target_url":"https://ci.example.com/build/1"}
+            ]}
+        """
     }
 }

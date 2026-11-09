@@ -81,6 +81,7 @@
     <string name="config_immortal">Renovate recreates this PR if it’s closed without merging.</string>
     <string name="detail_not_found">This PR is no longer available.</string>
     <string name="detail_no_checks">No CI checks reported.</string>
+    <string name="detail_open_check">Open build</string>
     <string name="detail_comments">Comments</string>
     <string name="detail_comments_failed">Couldn’t load comments: %1$s</string>
     <string name="comment_meta">%1$s · %2$s</string>
