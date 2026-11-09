@@ -1,0 +1,5 @@
+• PR comments are shown on the detail screen, with collapsible sections such as closure diffs.
+• Each CI check links to its build, and mergeability is shown next to the CI status.
+• Lock file maintenance PRs no longer show the update type as the package name.
+• Reads Renovate's list-style schedule as well as the one-line one.
+• A tidier PR detail screen. The Renovate settings start collapsed.
