@@ -3,6 +3,8 @@ package dev.cremin.mergejo.ui.screen.detail
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,6 +52,8 @@ import dev.cremin.mergejo.domain.model.CheckRun
 import dev.cremin.mergejo.domain.model.MergeStyle
 import dev.cremin.mergejo.domain.model.RenovatePr
 import dev.cremin.mergejo.ui.component.CiStatusBadge
+import dev.cremin.mergejo.ui.component.MergeableChip
+import dev.cremin.mergejo.ui.component.RebasePendingChip
 import dev.cremin.mergejo.ui.component.SecurityChip
 import dev.cremin.mergejo.ui.component.UpdateTypeChip
 
@@ -161,6 +165,7 @@ fun PrDetailScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Modifier = Modifier) {
     Column(
@@ -178,21 +183,24 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
             pr.versionChange?.let { Text(it, style = DetailText.code(DetailText.item)) }
                 ?: pr.changeSummary?.let { Text(it, style = DetailText.body) }
         }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CiStatusBadge(pr.ciStatus)
-            UpdateTypeChip(pr.updateType, label = pr.updateLabel)
-            if (pr.isSecurity) SecurityChip()
+        // Status at a glance. Wraps, since a security update with conflicts and a long type label
+        // (lockFileMaintenance) can outgrow a folded screen.
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            val centred = Modifier.align(Alignment.CenterVertically)
+            CiStatusBadge(pr.ciStatus, centred)
+            UpdateTypeChip(pr.updateType, centred, label = pr.updateLabel)
+            if (pr.isSecurity) SecurityChip(centred)
+            pr.mergeable?.let { MergeableChip(it, centred) }
+            if (pr.rebaseRequested) RebasePendingChip(centred)
         }
         Text(
             text = "${stringResource(R.string.detail_branch)}: ${pr.branch} → ${pr.baseBranch}",
             style = DetailText.code(DetailText.secondary),
             color = DetailText.secondaryColor,
         )
-        when (pr.mergeable) {
-            false -> Text(stringResource(R.string.detail_conflict), style = DetailText.secondary, color = MaterialTheme.colorScheme.error)
-            true -> Text(stringResource(R.string.detail_mergeable), style = DetailText.secondary, color = DetailText.secondaryColor)
-            null -> Unit
-        }
 
         if (body.advisories.isNotEmpty()) AdvisoriesSection(body.advisories)
         body.notices.forEach { NoticeCard(it) }

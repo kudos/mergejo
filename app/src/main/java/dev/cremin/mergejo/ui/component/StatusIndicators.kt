@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MergeType
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,7 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.cremin.mergejo.R
 import dev.cremin.mergejo.domain.model.CiStatus
 import dev.cremin.mergejo.domain.model.UpdateType
 
@@ -76,6 +79,24 @@ fun RebasePendingChip(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(end = 2.dp).size(14.dp),
         )
         LabelPill(text = "rebasing", color = MaterialTheme.colorScheme.tertiary)
+    }
+}
+
+/** Whether Forgejo can merge the PR as it stands: a neutral pill, or a red one for conflicts. */
+@Composable
+fun MergeableChip(mergeable: Boolean, modifier: Modifier = Modifier) {
+    if (mergeable) {
+        LabelPill(text = stringResource(R.string.chip_mergeable), color = MaterialTheme.colorScheme.secondary, modifier = modifier)
+        return
+    }
+    Row(modifier = modifier) {
+        Icon(
+            imageVector = Icons.Outlined.WarningAmber,
+            contentDescription = null,
+            tint = Red,
+            modifier = Modifier.padding(end = 2.dp).size(14.dp),
+        )
+        LabelPill(text = stringResource(R.string.chip_conflicts), color = Red)
     }
 }
 
