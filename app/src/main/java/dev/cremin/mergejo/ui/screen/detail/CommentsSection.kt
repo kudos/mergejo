@@ -30,14 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
-import com.mikepenz.markdown.model.MarkdownTypography
 import dev.cremin.mergejo.R
 import dev.cremin.mergejo.domain.model.CommentBlock
 import dev.cremin.mergejo.domain.model.PrComment
@@ -53,7 +49,7 @@ fun CommentsSection(state: CommentsState) {
             SectionHeader(stringResource(R.string.detail_comments))
             Text(
                 stringResource(R.string.detail_comments_failed, state.message),
-                style = MaterialTheme.typography.bodyMedium,
+                style = DetailText.secondary,
                 color = MaterialTheme.colorScheme.error,
             )
         }
@@ -73,14 +69,14 @@ private fun Comment(comment: PrComment) {
         val age = relativeAge(comment.updatedAt ?: comment.createdAt)
         Text(
             stringResource(if (comment.edited) R.string.comment_meta_edited else R.string.comment_meta, comment.author, age),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = DetailText.secondary,
+            color = DetailText.secondaryColor,
         )
         comment.blocks.forEachIndexed { index, block ->
             when (block) {
                 is CommentBlock.Prose -> Markdown(
                     content = block.markdown,
-                    typography = commentTypography(),
+                    typography = DetailText.markdown(),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 is CommentBlock.Details -> DetailsCard(block, key = "${comment.id}/$index")
@@ -104,7 +100,7 @@ private fun DetailsCard(block: CommentBlock.Details, key: String) {
             val summary = remember(block.summary) { boldSpans(block.summary) }
             Text(
                 summary.ifEmpty { AnnotatedString(stringResource(R.string.comment_details)) },
-                style = MaterialTheme.typography.bodyMedium,
+                style = DetailText.body,
                 modifier = Modifier.weight(1f),
             )
             Icon(
@@ -119,9 +115,7 @@ private fun DetailsCard(block: CommentBlock.Details, key: String) {
                 SelectionContainer {
                     Text(
                         block.code,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 0.sp, // the body styles' tracking makes wide output wider
+                        style = DetailText.code(DetailText.secondary),
                         softWrap = false,
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
@@ -131,29 +125,12 @@ private fun DetailsCard(block: CommentBlock.Details, key: String) {
             } else if (block.markdown.isNotBlank()) {
                 Markdown(
                     content = block.markdown,
-                    typography = commentTypography(),
+                    typography = DetailText.markdown(),
                     modifier = Modifier.fillMaxWidth().padding(12.dp),
                 )
             }
         }
     }
-}
-
-/**
- * The renderer's defaults start headings at the display styles, so a bot's `### Heading` would
- * outsize the screen's own section headers. Keep them at title sizes.
- */
-@Composable
-private fun commentTypography(): MarkdownTypography {
-    val type = MaterialTheme.typography
-    return markdownTypography(
-        h1 = type.titleLarge,
-        h2 = type.titleMedium,
-        h3 = type.titleSmall,
-        h4 = type.titleSmall,
-        h5 = type.labelLarge,
-        h6 = type.labelLarge,
-    )
 }
 
 /** `a **b** c` → "a b c" with "b" bold. */

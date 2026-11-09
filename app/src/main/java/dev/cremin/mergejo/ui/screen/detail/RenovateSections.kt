@@ -38,7 +38,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownColor
@@ -56,7 +55,7 @@ private const val COLLAPSED_RELEASE_LIMIT = 5
 
 @Composable
 fun SectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(text, style = MaterialTheme.typography.titleMedium, modifier = modifier)
+    Text(text, style = DetailText.section, modifier = modifier)
 }
 
 @Composable
@@ -82,32 +81,18 @@ private fun UpdateCard(update: DependencyUpdate) {
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    update.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.weight(1f),
-                )
+                Text(update.name, style = DetailText.item, modifier = Modifier.weight(1f))
                 UpdateTypeChip(update.updateType, label = update.updateLabel)
             }
             update.depType?.let {
-                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(it, style = DetailText.secondary, color = DetailText.secondaryColor)
             }
             val change = if (update.from != null) "${update.from} → ${update.to}" else update.to ?: update.changeText
             change?.let {
-                Text(
-                    it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
+                Text(it, style = DetailText.code(DetailText.body), modifier = Modifier.padding(top = 4.dp))
             }
             update.pending?.let {
-                Text(
-                    stringResource(R.string.detail_pending, it),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
+                Text(stringResource(R.string.detail_pending, it), style = DetailText.secondary, color = DetailText.secondaryColor)
             }
             FlowRow {
                 LinkButton(stringResource(R.string.link_package), update.url)
@@ -161,6 +146,7 @@ fun NoticeCard(notice: Notice) {
             Markdown(
                 content = notice.markdown,
                 colors = markdownColor(text = LocalContentColor.current),
+                typography = DetailText.markdown(),
                 modifier = Modifier.weight(1f),
             )
         }
@@ -178,8 +164,8 @@ fun ReleaseNotesSection(packages: List<PackageReleaseNotes>) {
             if (packages.size > 1 && pkg.title.isNotBlank()) {
                 Text(
                     pkg.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = DetailText.secondary,
+                    color = DetailText.secondaryColor,
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }
@@ -211,16 +197,11 @@ private fun ReleaseCard(release: Release, initiallyExpanded: Boolean, key: Strin
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                release.version,
-                style = MaterialTheme.typography.titleSmall,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text(release.version, style = DetailText.code(DetailText.item))
             Text(
                 release.title.orEmpty(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = DetailText.secondary,
+                color = DetailText.secondaryColor,
                 maxLines = 1,
                 modifier = Modifier.weight(1f),
             )
@@ -235,7 +216,11 @@ private fun ReleaseCard(release: Release, initiallyExpanded: Boolean, key: Strin
             HorizontalDivider()
             // Each release renders on its own, and only when expanded, so a
             // 100-release catch-up doesn't lay out one giant markdown document.
-            Markdown(content = release.notesMarkdown, modifier = Modifier.fillMaxWidth().padding(12.dp))
+            Markdown(
+                content = release.notesMarkdown,
+                typography = DetailText.markdown(),
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+            )
         }
         if (expanded || !hasNotes) {
             Row(Modifier.padding(horizontal = 4.dp)) {
@@ -266,11 +251,7 @@ fun RenovateConfigSection(config: RenovateConfig) {
         }
         config.rebasing?.let { ConfigRow(stringResource(R.string.config_rebasing), it) }
         if (config.immortal) {
-            Text(
-                stringResource(R.string.config_immortal),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.tertiary,
-            )
+            Text(stringResource(R.string.config_immortal), style = DetailText.secondary, color = DetailText.secondaryColor)
         }
     }
 }
@@ -278,7 +259,7 @@ fun RenovateConfigSection(config: RenovateConfig) {
 @Composable
 private fun ConfigRow(label: String, value: String) {
     Column {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value.removeSuffix("."), style = MaterialTheme.typography.bodySmall)
+        Text(label, style = DetailText.secondary, color = DetailText.secondaryColor)
+        Text(value.removeSuffix("."), style = DetailText.body)
     }
 }

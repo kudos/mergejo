@@ -40,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -122,7 +121,7 @@ fun PrDetailScreen(
         when {
             ui.loading -> CenterBox(Modifier.padding(padding)) { CircularProgressIndicator() }
             pr == null -> CenterBox(Modifier.padding(padding)) {
-                Text(stringResource(R.string.detail_not_found), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.detail_not_found), style = DetailText.body, color = DetailText.secondaryColor)
             }
             else -> DetailContent(pr = pr, comments = ui.comments, modifier = Modifier.padding(padding))
         }
@@ -172,17 +171,12 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         val body = pr.body
-        Text(pr.repoSlug, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(pr.title, style = MaterialTheme.typography.titleLarge)
+        Text(pr.repoSlug, style = DetailText.secondary, color = DetailText.secondaryColor)
+        Text(pr.title, style = DetailText.title)
         // A single update is fully described here; groups get the per-package cards below.
         if (body.updates.size <= 1) {
             pr.versionChange?.let {
-                Text(
-                    it,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Text(it, style = DetailText.code(DetailText.item))
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -192,13 +186,12 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
         }
         Text(
             text = "${stringResource(R.string.detail_branch)}: ${pr.branch} → ${pr.baseBranch}",
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = DetailText.code(DetailText.secondary),
+            color = DetailText.secondaryColor,
         )
         when (pr.mergeable) {
-            false -> Text(stringResource(R.string.detail_conflict), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-            true -> Text(stringResource(R.string.detail_mergeable), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+            false -> Text(stringResource(R.string.detail_conflict), style = DetailText.secondary, color = MaterialTheme.colorScheme.error)
+            true -> Text(stringResource(R.string.detail_mergeable), style = DetailText.secondary, color = DetailText.secondaryColor)
             null -> Unit
         }
 
@@ -212,7 +205,7 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
         HorizontalDivider()
         SectionHeader(stringResource(R.string.detail_checks))
         if (pr.checks.isEmpty()) {
-            Text(stringResource(R.string.detail_no_checks), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.detail_no_checks), style = DetailText.secondary, color = DetailText.secondaryColor)
         } else {
             pr.checks.forEach { CheckRow(it) }
         }
@@ -227,7 +220,11 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
             // Not Renovate's template (or a format we don't know yet): show it as-is.
             HorizontalDivider()
             SectionHeader(stringResource(R.string.detail_description))
-            Markdown(content = RenovateMarkdown.clean(pr.bodyMarkdown), modifier = Modifier.fillMaxWidth())
+            Markdown(
+                content = RenovateMarkdown.clean(pr.bodyMarkdown),
+                typography = DetailText.markdown(),
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
         if (body.config.settings.isNotEmpty()) {
             HorizontalDivider()
@@ -241,9 +238,9 @@ private fun CheckRow(check: CheckRun) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         CiStatusBadge(check.status)
         Column(Modifier.weight(1f)) {
-            Text(check.context.ifBlank { "check" }, style = MaterialTheme.typography.bodyMedium)
+            Text(check.context.ifBlank { "check" }, style = DetailText.body)
             if (check.description.isNotBlank()) {
-                Text(check.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(check.description, style = DetailText.secondary, color = DetailText.secondaryColor)
             }
         }
     }
