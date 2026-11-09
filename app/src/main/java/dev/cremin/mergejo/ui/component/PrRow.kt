@@ -78,7 +78,7 @@ fun PrRow(pr: RenovatePr, onClick: () -> Unit, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 CiStatusBadge(pr.ciStatus)
-                UpdateTypeChip(pr.updateType, label = pr.primaryUpdate?.updateLabel ?: pr.body.updates.firstOrNull()?.updateLabel)
+                UpdateTypeChip(pr.updateType, label = pr.updateLabel)
                 if (pr.isSecurity) SecurityChip()
                 if (pr.rebaseRequested) RebasePendingChip()
                 if (pr.mergeable == false) {

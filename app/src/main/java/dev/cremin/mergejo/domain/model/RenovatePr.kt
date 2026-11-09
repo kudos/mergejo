@@ -53,6 +53,14 @@ data class RenovatePr(
     val additionalUpdateCount: Int
         get() = (body.updates.size - 1).coerceAtLeast(0)
 
+    /** The Update column, for the type chip when [updateType] doesn't model it (`lockFileMaintenance`). */
+    val updateLabel: String?
+        get() = primaryUpdate?.updateLabel ?: body.updates.firstOrNull()?.updateLabel
+
+    /** A lone row without a package (lock file maintenance) has only its Change text, e.g. "All locks refreshed". */
+    val changeSummary: String?
+        get() = body.updates.singleOrNull()?.takeIf { it.name.isBlank() }?.changeText
+
     /** Prefers Renovate's own spelling (`^0.78.0`, `v5`) over the normalised versions. */
     val versionChange: String?
         get() {

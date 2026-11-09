@@ -175,13 +175,12 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
         Text(pr.title, style = DetailText.title)
         // A single update is fully described here; groups get the per-package cards below.
         if (body.updates.size <= 1) {
-            pr.versionChange?.let {
-                Text(it, style = DetailText.code(DetailText.item))
-            }
+            pr.versionChange?.let { Text(it, style = DetailText.code(DetailText.item)) }
+                ?: pr.changeSummary?.let { Text(it, style = DetailText.body) }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CiStatusBadge(pr.ciStatus)
-            UpdateTypeChip(pr.updateType)
+            UpdateTypeChip(pr.updateType, label = pr.updateLabel)
             if (pr.isSecurity) SecurityChip()
         }
         Text(
@@ -197,7 +196,8 @@ private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Mod
 
         if (body.advisories.isNotEmpty()) AdvisoriesSection(body.advisories)
         body.notices.forEach { NoticeCard(it) }
-        if (body.updates.isNotEmpty()) {
+        // A package-less row (lock file maintenance) is already covered by the header.
+        if (body.updates.any { it.name.isNotBlank() }) {
             HorizontalDivider()
             UpdatesSection(body.updates)
         }
