@@ -78,8 +78,10 @@ fun UpdatesSection(updates: List<DependencyUpdate>) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun UpdateCard(update: DependencyUpdate) {
+    // The link buttons bring their own padding, so the card only needs its own below the text without them.
+    val hasLinks = update.url != null || update.sourceUrl != null || update.diffUrl != null
     OutlinedCard(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 4.dp)) {
+        Column(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = if (hasLinks) 4.dp else 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Without a package (lock file maintenance) the change is the headline.
                 Text(
@@ -103,10 +105,12 @@ private fun UpdateCard(update: DependencyUpdate) {
             update.pending?.let {
                 Text(stringResource(R.string.detail_pending, it), style = DetailText.secondary, color = DetailText.secondaryColor)
             }
-            FlowRow {
-                LinkButton(stringResource(R.string.link_package), update.url)
-                LinkButton(stringResource(R.string.link_source), update.sourceUrl)
-                LinkButton(stringResource(R.string.link_diff), update.diffUrl)
+            if (hasLinks) {
+                FlowRow {
+                    LinkButton(stringResource(R.string.link_package), update.url)
+                    LinkButton(stringResource(R.string.link_source), update.sourceUrl)
+                    LinkButton(stringResource(R.string.link_diff), update.diffUrl)
+                }
             }
         }
     }
