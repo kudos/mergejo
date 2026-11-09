@@ -193,7 +193,7 @@ class RenovateBodyParserTest {
             """.trimIndent(),
         )
         val update = body.updates.single()
-        assertEquals("lockFileMaintenance", update.name)
+        assertEquals("", update.name)
         assertEquals("lockFileMaintenance", update.updateLabel)
         assertEquals(UpdateType.OTHER, update.updateType)
         assertNull(update.from)

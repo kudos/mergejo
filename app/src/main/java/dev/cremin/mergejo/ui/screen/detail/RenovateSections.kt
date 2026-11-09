@@ -81,13 +81,22 @@ private fun UpdateCard(update: DependencyUpdate) {
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(update.name, style = DetailText.item, modifier = Modifier.weight(1f))
+                // Without a package (lock file maintenance) the change is the headline.
+                Text(
+                    update.name.ifBlank { update.changeText ?: update.updateLabel.orEmpty() },
+                    style = DetailText.item,
+                    modifier = Modifier.weight(1f),
+                )
                 UpdateTypeChip(update.updateType, label = update.updateLabel)
             }
             update.depType?.let {
                 Text(it, style = DetailText.secondary, color = DetailText.secondaryColor)
             }
-            val change = if (update.from != null) "${update.from} → ${update.to}" else update.to ?: update.changeText
+            val change = when {
+                update.from != null -> "${update.from} → ${update.to}"
+                update.name.isBlank() -> null
+                else -> update.to ?: update.changeText
+            }
             change?.let {
                 Text(it, style = DetailText.code(DetailText.body), modifier = Modifier.padding(top = 4.dp))
             }

@@ -182,4 +182,13 @@ class RenovatePrParserTest {
         assertEquals("left-pad", parsed.dependency)
         assertEquals(UpdateType.MINOR, parsed.updateType)
     }
+
+    @Test
+    fun `lock file maintenance has no dependency`() {
+        val body = checkNotNull(javaClass.getResource("/renovate/lock-file-maintenance.md")).readText()
+        val parsed = RenovatePrParser.parse("Lock file maintenance", body)
+        // So the list and the top bar show the PR title rather than the update type twice.
+        assertNull(parsed.dependency)
+        assertEquals("lockFileMaintenance", parsed.body.updates.single().updateLabel)
+    }
 }

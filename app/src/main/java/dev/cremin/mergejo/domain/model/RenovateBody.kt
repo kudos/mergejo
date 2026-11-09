@@ -25,6 +25,7 @@ data class RenovateBody(
 
 /** A single row of Renovate's `| Package | Type | Update | Change | … |` table. */
 data class DependencyUpdate(
+    /** The package; empty when the table has no Package column (lock file maintenance). */
     val name: String,
     /** Homepage/registry link on the package name. */
     val url: String? = null,

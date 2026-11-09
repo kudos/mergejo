@@ -173,7 +173,6 @@ object RenovateBodyParser {
         val nameLink = links.firstOrNull { it.groupValues[1].lowercase() !in AUX_LINK_TEXT }
         val name = nameLink?.groupValues?.get(1)
             ?: packageCell?.replace(mdLink, "")?.replace(Regex("""\(\s*\)"""), "")
-            ?: cell("update")
             ?: ""
 
         val changeCell = cell("change")
