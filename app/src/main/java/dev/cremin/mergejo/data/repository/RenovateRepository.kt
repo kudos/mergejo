@@ -1,16 +1,19 @@
 package dev.cremin.mergejo.data.repository
 
 import dev.cremin.mergejo.data.remote.api.ForgejoApi
+import dev.cremin.mergejo.data.remote.dto.CommentDto
 import dev.cremin.mergejo.data.remote.dto.CreatePullReviewOptions
 import dev.cremin.mergejo.data.remote.dto.EditIssueOption
 import dev.cremin.mergejo.data.remote.dto.MergePullRequestOption
 import dev.cremin.mergejo.data.remote.dto.PullRequestDto
 import dev.cremin.mergejo.data.remote.dto.RepoDto
+import dev.cremin.mergejo.domain.CommentParser
 import dev.cremin.mergejo.domain.RebaseCheckbox
 import dev.cremin.mergejo.domain.RenovatePrParser
 import dev.cremin.mergejo.domain.model.CheckRun
 import dev.cremin.mergejo.domain.model.CiStatus
 import dev.cremin.mergejo.domain.model.MergeStyle
+import dev.cremin.mergejo.domain.model.PrComment
 import dev.cremin.mergejo.domain.model.RenovatePr
 import java.io.IOException
 import java.net.UnknownHostException
@@ -110,6 +113,20 @@ class RenovateRepository @Inject constructor(
             .asResult()
             .onSuccess { remove(pr.id) }
 
+    /**
+     * The PR's comments, oldest first. Not part of [refresh], which would cost a request per PR;
+     * the detail screen loads them when it opens.
+     */
+    suspend fun comments(pr: RenovatePr): Result<List<PrComment>> = try {
+        val dtos = api.listIssueComments(pr.repoOwner, pr.repoName, pr.number)
+        val comments = withContext(Dispatchers.Default) { dtos.map { it.toPrComment() } }
+        Result.success(comments.filter { it.blocks.isNotEmpty() })
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Result.failure(IllegalStateException(e.toUserMessage(), e))
+    }
+
     /** Ticks Renovate's rebase checkbox in the PR body; a no-op if already requested. */
     suspend fun rebase(pr: RenovatePr): Result<Unit> {
         val updatedBody = RebaseCheckbox.requestRebase(pr.bodyMarkdown)
@@ -150,7 +167,7 @@ class RenovateRepository @Inject constructor(
             baseBranch = dto.base.ref,
             headSha = dto.head.sha,
             author = dto.user?.login.orEmpty(),
-            createdAt = dto.createdAt?.let { runCatching { Instant.parse(it) }.getOrNull() },
+            createdAt = dto.createdAt.toInstantOrNull(),
             dependency = parsed.dependency,
             currentVersion = parsed.currentVersion,
             newVersion = parsed.newVersion,
@@ -165,6 +182,16 @@ class RenovateRepository @Inject constructor(
             rebaseRequested = RebaseCheckbox.isChecked(dto.body),
         )
     }
+
+    private fun CommentDto.toPrComment() = PrComment(
+        id = id,
+        author = user?.login.orEmpty(),
+        createdAt = createdAt.toInstantOrNull(),
+        updatedAt = updatedAt.toInstantOrNull(),
+        blocks = CommentParser.parse(body),
+    )
+
+    private fun String?.toInstantOrNull(): Instant? = this?.let { runCatching { Instant.parse(it) }.getOrNull() }
 
     private fun remove(id: String) {
         _pullRequests.value = _pullRequests.value.filterNot { it.id == id }

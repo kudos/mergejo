@@ -1,6 +1,7 @@
 package dev.cremin.mergejo.data.remote.api
 
 import dev.cremin.mergejo.data.remote.dto.CombinedStatusDto
+import dev.cremin.mergejo.data.remote.dto.CommentDto
 import dev.cremin.mergejo.data.remote.dto.CreatePullReviewOptions
 import dev.cremin.mergejo.data.remote.dto.EditIssueOption
 import dev.cremin.mergejo.data.remote.dto.MergePullRequestOption
@@ -55,6 +56,14 @@ interface ForgejoApi {
         @Path("repo") repo: String,
         @Path("sha") sha: String,
     ): CombinedStatusDto
+
+    /** Every comment on the issue or PR, oldest first. This endpoint isn't paginated. */
+    @GET("api/v1/repos/{owner}/{repo}/issues/{index}/comments")
+    suspend fun listIssueComments(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("index") index: Long,
+    ): List<CommentDto>
 
     @POST("api/v1/repos/{owner}/{repo}/pulls/{index}/merge")
     suspend fun mergePull(

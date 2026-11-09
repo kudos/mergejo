@@ -3,6 +3,7 @@ package dev.cremin.mergejo.data.repository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.cremin.mergejo.data.remote.api.ForgejoApi
 import dev.cremin.mergejo.domain.model.CiStatus
+import dev.cremin.mergejo.domain.model.CommentBlock
 import dev.cremin.mergejo.domain.model.UpdateType
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -37,6 +38,7 @@ class RenovateRepositoryTest {
                     path.startsWith("/api/v1/user/repos") -> REPOS_JSON
                     path.endsWith("/pulls") -> PULLS_JSON
                     path.contains("/commits/") && path.endsWith("/status") -> STATUS_JSON
+                    path == "/api/v1/repos/jonathan/app/issues/42/comments" -> COMMENTS_JSON
                     else -> return MockResponse().setResponseCode(404)
                 }
                 return MockResponse().setBody(body).addHeader("Content-Type", "application/json")
@@ -80,6 +82,20 @@ class RenovateRepositoryTest {
         assertEquals(CiStatus.SUCCESS, pr.ciStatus)
         assertEquals(true, pr.mergeable)
         assertTrue(pr.checks.isNotEmpty())
+    }
+
+    @Test
+    fun `comments are parsed and empty ones dropped`() = runBlocking {
+        repository.refresh()
+        val comments = repository.comments(repository.pullRequests.value.single()).getOrThrow()
+
+        assertEquals(1, comments.size)
+        val comment = comments.single()
+        assertEquals("forgejo-actions", comment.author)
+        assertTrue(comment.edited)
+        val details = comment.blocks.single() as CommentBlock.Details
+        assertEquals("**desktop**: no changes", details.summary)
+        assertEquals("<<< a\n>>> b", details.code)
     }
 
     @Test
@@ -155,6 +171,14 @@ class RenovateRepositoryTest {
                 "head":{"ref":"feature/foo","sha":"def456"},
                 "base":{"ref":"main"}
               }
+            ]
+        """
+
+        const val COMMENTS_JSON = """
+            [
+              {"id":1,"body":"<!-- marker -->","user":{"login":"renovate"},"created_at":"2026-07-01T10:00:00Z","updated_at":"2026-07-01T10:00:00Z"},
+              {"id":2,"body":"<details><summary><b>desktop</b>: no changes</summary>\n\n```\n<<< a\n>>> b\n```\n\n</details>\n",
+               "user":{"login":"forgejo-actions"},"created_at":"2026-07-01T10:00:00Z","updated_at":"2026-07-01T11:00:00Z"}
             ]
         """
 

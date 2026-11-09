@@ -124,7 +124,7 @@ fun PrDetailScreen(
             pr == null -> CenterBox(Modifier.padding(padding)) {
                 Text(stringResource(R.string.detail_not_found), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            else -> DetailContent(pr = pr, modifier = Modifier.padding(padding))
+            else -> DetailContent(pr = pr, comments = ui.comments, modifier = Modifier.padding(padding))
         }
     }
 
@@ -163,7 +163,7 @@ fun PrDetailScreen(
 }
 
 @Composable
-private fun DetailContent(pr: RenovatePr, modifier: Modifier = Modifier) {
+private fun DetailContent(pr: RenovatePr, comments: CommentsState, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -216,6 +216,8 @@ private fun DetailContent(pr: RenovatePr, modifier: Modifier = Modifier) {
         } else {
             pr.checks.forEach { CheckRow(it) }
         }
+        // Next to the checks: these are mostly CI output, such as closure diffs.
+        CommentsSection(comments)
 
         if (body.releaseNotes.isNotEmpty()) {
             HorizontalDivider()

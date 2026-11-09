@@ -67,6 +67,9 @@ so you can merge, approve, rebase or close it without opening a browser.
   shown as plain markdown.
 - **CI status** comes from the combined commit status of the PR's head commit, with each
   check listed.
+- **Comments** on the PR are shown below the checks. Collapsible `<details>` sections, which
+  CI bots use for long output such as Nix closure diffs, become expandable cards. Command
+  output keeps its columns and scrolls sideways.
 - **Actions:**
   - **Merge** as a merge commit, squash or rebase. You set a default style in Settings and
     can change it for each merge.
@@ -154,7 +157,8 @@ app/src/main/java/dev/cremin/mergejo/
   data/remote/        ForgejoApi (Retrofit) + Forgejo DTOs
   data/repository/    RenovateRepository: gather → filter renovate/ branches → add CI status → actions
   data/preferences/   SettingsRepository (DataStore)
-  domain/             RenovateBodyParser, RenovatePrParser, RenovateMarkdown, RebaseCheckbox, NewPrDetector
+  domain/             RenovateBodyParser, RenovatePrParser, RenovateMarkdown, RebaseCheckbox, NewPrDetector,
+                      CommentParser
   notifications/      background poll (WorkManager + Hilt): scheduler, worker, notifier
   ui/screen/          login, list, detail, settings (Screen + ViewModel each)
   di/                 Hilt modules

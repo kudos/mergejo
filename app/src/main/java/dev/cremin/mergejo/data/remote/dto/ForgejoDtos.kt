@@ -82,6 +82,15 @@ data class CombinedStatusDto(
     val statuses: List<CommitStatusDto> = emptyList(),
 )
 
+@Serializable
+data class CommentDto(
+    val id: Long = 0,
+    val body: String = "",
+    val user: UserDto? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
+)
+
 // --- Request bodies ---
 
 @Serializable

@@ -50,7 +50,8 @@ data/repository/    RenovateRepository — the seam: aggregate (every page, via 
 data/preferences/   SettingsRepository (DataStore)
 domain/             RenovateBodyParser (body → RenovateBody: table rows, notices, advisories, per-release notes, config),
                     RenovatePrParser (PR-level summary on top of it), RenovateMarkdown (cleanup for the renderer), RebaseCheckbox,
-                    NewPrDetector (which PRs a background poll should announce)
+                    NewPrDetector (which PRs a background poll should announce),
+                    CommentParser (PR comment → prose + top-level <details> blocks, for bot output such as closure diffs)
 notifications/      PrPollScheduler (unique periodic WorkManager job), PrPollWorker (@HiltWorker), PrNotifier
 ui/screen/{login,list,detail,settings}/   Screen + ViewModel each; ui/navigation, ui/component
 di/                 NetworkModule, AuthModule
@@ -72,6 +73,10 @@ di/                 NetworkModule, AuthModule
   `MergejoApplication` can supply `HiltWorkerFactory`. Seen PR ids are a union (not the last poll's
   set) so a repo that fails to list once doesn't get its PRs re-announced; enabling starts from a
   silent baseline. A notification tap passes the PR id to `MainActivity` (`EXTRA_PR_ID`) → `AppNavHost`.
+- PR comments are loaded by the detail screen (not by `refresh`, which would cost a request per PR) and reloaded
+  when the head commit changes, since CI bots rewrite their comment per push. Each top-level `<details>` becomes an
+  expandable card; a body that is a single fenced code block is shown verbatim and scrolls sideways instead of
+  wrapping. Fixtures live in `app/src/test/resources/comments/`.
 - Out of scope for v1 (clean seams exist): batch actions, Dependency Dashboard control.
 
 ## Hosting

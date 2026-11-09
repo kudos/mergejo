@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.cremin.mergejo.data.preferences.SettingsRepository
 import dev.cremin.mergejo.data.repository.RenovateRepository
 import dev.cremin.mergejo.domain.model.MergeStyle
+import dev.cremin.mergejo.domain.model.PrComment
 import dev.cremin.mergejo.domain.model.RenovatePr
 import dev.cremin.mergejo.ui.navigation.Destinations
 import javax.inject.Inject
@@ -15,7 +16,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,7 +36,14 @@ data class PrDetailUiState(
     val notFound: Boolean = false,
     val actionInProgress: Boolean = false,
     val defaultMergeStyle: MergeStyle = MergeStyle.SQUASH,
+    val comments: CommentsState = CommentsState.Loading,
 )
+
+sealed interface CommentsState {
+    data object Loading : CommentsState
+    data class Loaded(val comments: List<PrComment>) : CommentsState
+    data class Failed(val message: String) : CommentsState
+}
 
 @HiltViewModel
 class PrDetailViewModel @Inject constructor(
@@ -44,6 +55,7 @@ class PrDetailViewModel @Inject constructor(
     private val prId: String = checkNotNull(savedStateHandle[Destinations.ARG_PR_ID])
 
     private val actionInProgress = MutableStateFlow(false)
+    private val comments = MutableStateFlow<CommentsState>(CommentsState.Loading)
 
     private val _events = MutableSharedFlow<DetailEvent>(extraBufferCapacity = 8)
     val events = _events.asSharedFlow()
@@ -53,7 +65,8 @@ class PrDetailViewModel @Inject constructor(
         repository.isRefreshing,
         actionInProgress,
         settings.defaultMergeStyle,
-    ) { prs, refreshing, inProgress, mergeStyle ->
+        comments,
+    ) { prs, refreshing, inProgress, mergeStyle, comments ->
         val pr = prs.firstOrNull { it.id == prId }
         PrDetailUiState(
             pr = pr,
@@ -61,12 +74,25 @@ class PrDetailViewModel @Inject constructor(
             notFound = pr == null && !refreshing,
             actionInProgress = inProgress,
             defaultMergeStyle = mergeStyle,
+            comments = comments,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PrDetailUiState())
 
     init {
         if (repository.pullRequests.value.isEmpty()) {
             viewModelScope.launch { repository.refresh() }
+        }
+        // Again after a push: CI bots rewrite their comment for the new head commit.
+        viewModelScope.launch {
+            repository.pullRequests
+                .mapNotNull { prs -> prs.firstOrNull { it.id == prId } }
+                .distinctUntilChangedBy { it.headSha }
+                .collectLatest { pr ->
+                    comments.value = repository.comments(pr).fold(
+                        onSuccess = { CommentsState.Loaded(it) },
+                        onFailure = { CommentsState.Failed(it.message ?: "Unknown error") },
+                    )
+                }
         }
     }
 
