@@ -7,6 +7,7 @@ import dev.cremin.mergejo.domain.model.PackageReleaseNotes
 import dev.cremin.mergejo.domain.model.Release
 import dev.cremin.mergejo.domain.model.RenovateBody
 import dev.cremin.mergejo.domain.model.RenovateConfig
+import dev.cremin.mergejo.domain.model.ScheduleEntry
 import dev.cremin.mergejo.domain.model.UpdateType
 
 /**
@@ -59,6 +60,10 @@ object RenovateBodyParser {
     private val releaseHeading = Regex("""^###\s+(?:\[`?([^`\]]+?)`?]\(([^)\s]+)\)|`([^`]+)`)(.*)$""")
     private val compareSource = Regex("""^\[Compare Source]\(([^)\s]+)\)\s*$""", RegexOption.IGNORE_CASE)
     private val configLine = Regex("""^\S+\s+\*\*([^*]+)\*\*:\s*(.+)$""")
+    private val listItem = Regex("""^(\s*)[-*]\s+(.+)$""")
+    private val inTimezone = Regex("""\s+in timezone\s+(\S+?)(?=,|\.?$)""")
+    // Schedule strings can contain commas themselves, so split only before the next label.
+    private val nextSchedule = Regex(""",\s*(?=Automerge - )""")
     private val warningHeading = Regex("""(?m)^(?:#{1,4}\s*)?⚠""")
     private val securityHeading = Regex("""(?im)^#{1,4}\s.*(?:vulnerabilit|\bCVE-|\bGHSA-)""")
     private val linkedAdvisory = Regex("""\[`?(CVE-\d{4}-\d{4,}|GHSA(?:-[0-9a-z]{4}){3})`?]\(([^)\s]+)\)""")
@@ -68,6 +73,8 @@ object RenovateBodyParser {
     private val semver = Regex("""^(\d+)(?:\.(\d+))?(?:\.(\d+))?""")
 
     private const val REBASE_MARKER = "<!-- rebase-check -->"
+    private const val SCHEDULE = "Schedule"
+    private const val NO_SCHEDULE = "(no schedule defined)"
 
     fun parse(body: String): RenovateBody {
         val lines = body.replace("\r\n", "\n").lines()
@@ -281,13 +288,69 @@ object RenovateBodyParser {
 
     private fun parseConfig(lines: List<String>, heading: Int): RenovateConfig {
         val settings = linkedMapOf<String, String>()
+        val scheduleList = mutableListOf<String>()
+        var key: String? = null
         for (i in heading + 1 until lines.size) {
             val line = lines[i].trim()
             if (rule.matches(line) || REBASE_MARKER in line) break
-            configLine.matchEntire(line)?.let { settings[it.groupValues[1].trim()] = it.groupValues[2].trim() }
+            val setting = configLine.matchEntire(line)
+            if (setting != null) {
+                key = setting.groupValues[1].trim()
+                settings[key] = setting.groupValues[2].trim()
+            } else if (key == SCHEDULE && listItem.matches(lines[i])) {
+                scheduleList += lines[i]
+            }
         }
-        return RenovateConfig(settings)
+        val (schedule, timezone) = settings[SCHEDULE]
+            ?.let { if (scheduleList.isNotEmpty()) parseScheduleList(it, scheduleList) else parseScheduleLine(it) }
+            ?: (emptyList<ScheduleEntry>() to null)
+        return RenovateConfig(settings, schedule, timezone)
     }
+
+    /**
+     * Current Renovate: the timezone on the setting line, then a list per schedule.
+     * ```
+     * 📅 **Schedule**: (UTC)
+     *
+     * - Branch creation
+     *   - "before 4am on monday"
+     * - Automerge
+     *   - At any time (no schedule defined)
+     * ```
+     */
+    private fun parseScheduleList(header: String, items: List<String>): Pair<List<ScheduleEntry>, String?> {
+        val entries = mutableListOf<ScheduleEntry>()
+        for (item in items) {
+            val match = listItem.matchEntire(item) ?: continue
+            val text = match.groupValues[2].trim()
+            if (match.groupValues[1].isEmpty()) {
+                entries += ScheduleEntry(text, emptyList())
+            } else if (entries.isNotEmpty()) {
+                val last = entries.removeAt(entries.lastIndex)
+                entries += last.copy(times = last.times + scheduleTime(text))
+            }
+        }
+        val timezone = header.trim().removeSurrounding("(", ")").trim().ifEmpty { null }
+        return entries to timezone
+    }
+
+    /**
+     * Older Renovate, on one line:
+     * `Branch creation - "before 4am on monday" in timezone Europe/London, Automerge - At any time (no schedule defined).`
+     */
+    private fun parseScheduleLine(line: String): Pair<List<ScheduleEntry>, String?> {
+        val timezone = inTimezone.find(line)?.groupValues?.get(1)
+        val entries = line.replace(inTimezone, "").trim().removeSuffix(".")
+            .split(nextSchedule)
+            .mapNotNull { part ->
+                val label = part.substringBefore(" - ", missingDelimiterValue = "").trim()
+                if (label.isEmpty()) null else ScheduleEntry(label, listOf(scheduleTime(part.substringAfter(" - "))))
+            }
+        return entries to timezone
+    }
+
+    private fun scheduleTime(text: String): String =
+        text.trim().removeSuffix(NO_SCHEDULE).trim().removeSurrounding("\"")
 
     // --- Advisories ---
 

@@ -74,6 +74,7 @@
     <string name="link_compare">Compare</string>
     <string name="config_automerge">Automerge</string>
     <string name="config_schedule">Schedule</string>
+    <string name="config_schedule_in">Schedule (%1$s)</string>
     <string name="config_rebasing">Rebasing</string>
     <string name="config_enabled">Enabled</string>
     <string name="config_disabled">Disabled — merge manually</string>

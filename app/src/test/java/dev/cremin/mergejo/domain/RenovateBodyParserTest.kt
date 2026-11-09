@@ -1,6 +1,7 @@
 package dev.cremin.mergejo.domain
 
 import dev.cremin.mergejo.domain.model.Notice
+import dev.cremin.mergejo.domain.model.ScheduleEntry
 import dev.cremin.mergejo.domain.model.UpdateType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -51,7 +52,11 @@ class RenovateBodyParserTest {
         val body = RenovateBodyParser.parse(fixture("koa-compress.md"))
         assertEquals(false, body.config.automerge)
         assertFalse(body.config.immortal)
-        assertTrue(body.config.schedule!!.startsWith("Branch creation"))
+        assertEquals(
+            listOf(ScheduleEntry("Branch creation", listOf("At any time")), ScheduleEntry("Automerge", listOf("At any time"))),
+            body.config.schedule,
+        )
+        assertNull(body.config.timezone)
         assertTrue(body.notices.isEmpty())
         assertTrue(body.advisories.isEmpty())
         assertTrue(body.isStructured)
@@ -107,6 +112,71 @@ class RenovateBodyParserTest {
         assertEquals(true, config.automerge)
         assertTrue(config.immortal)
         assertTrue(config.rebasing!!.startsWith("Whenever PR is behind"))
+    }
+
+    // --- Real body from cremin.dev (jonathan/nixos), Renovate 44: the schedule as a list ---
+
+    @Test
+    fun `real body - schedule list with timezone`() {
+        val config = RenovateBodyParser.parse(fixture("lock-file-maintenance.md")).config
+        assertEquals(
+            listOf(
+                ScheduleEntry("Branch creation", listOf("before 4am on monday")),
+                ScheduleEntry("Automerge", listOf("At any time")),
+            ),
+            config.schedule,
+        )
+        assertEquals("UTC", config.timezone)
+        assertEquals(false, config.automerge)
+        assertTrue(config.immortal)
+        assertTrue(config.rebasing!!.startsWith("Whenever PR becomes conflicted"))
+    }
+
+    @Test
+    fun `schedule list with several times`() {
+        val config = RenovateBodyParser.parse(
+            """
+            ### Configuration
+
+            📅 **Schedule**: (Europe/London)
+
+            - Branch creation
+              - "after 10pm every weekday"
+              - "before 5am every weekday"
+            - Automerge
+              - At any time (no schedule defined)
+
+            🚦 **Automerge**: Disabled by config.
+            """.trimIndent(),
+        ).config
+        assertEquals(
+            listOf(
+                ScheduleEntry("Branch creation", listOf("after 10pm every weekday", "before 5am every weekday")),
+                ScheduleEntry("Automerge", listOf("At any time")),
+            ),
+            config.schedule,
+        )
+        assertEquals("Europe/London", config.timezone)
+        assertEquals(false, config.automerge)
+    }
+
+    @Test
+    fun `one-line schedule with timezone and commas`() {
+        val config = RenovateBodyParser.parse(
+            """
+            ### Configuration
+
+            📅 **Schedule**: Branch creation - "after 10pm every weekday,before 5am every weekday" in timezone Europe/Berlin, Automerge - At any time (no schedule defined).
+            """.trimIndent(),
+        ).config
+        assertEquals(
+            listOf(
+                ScheduleEntry("Branch creation", listOf("after 10pm every weekday,before 5am every weekday")),
+                ScheduleEntry("Automerge", listOf("At any time")),
+            ),
+            config.schedule,
+        )
+        assertEquals("Europe/Berlin", config.timezone)
     }
 
     // --- Shapes without a version pair ---

@@ -70,12 +70,19 @@ data class Release(
     val notesMarkdown: String = "",
 )
 
+/** What one of Renovate's schedules governs ("Branch creation", "Automerge") and when it allows it. */
+data class ScheduleEntry(val label: String, val times: List<String>)
+
 /**
  * The "Configuration" section. [settings] holds every `emoji **Key**: value`
- * line verbatim (Schedule, Automerge, Rebasing, Ignore, Immortal, …).
+ * line verbatim (Schedule, Automerge, Rebasing, Ignore, Immortal, …); [schedule] and [timezone]
+ * are the Schedule setting parsed, from either of the formats Renovate has used.
  */
-data class RenovateConfig(val settings: Map<String, String> = emptyMap()) {
-    val schedule: String? get() = settings["Schedule"]
+data class RenovateConfig(
+    val settings: Map<String, String> = emptyMap(),
+    val schedule: List<ScheduleEntry> = emptyList(),
+    val timezone: String? = null,
+) {
     val rebasing: String? get() = settings["Rebasing"]
 
     /** null when Renovate didn't say. */

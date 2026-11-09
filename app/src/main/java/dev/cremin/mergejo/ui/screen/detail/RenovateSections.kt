@@ -258,7 +258,12 @@ fun RenovateConfigSection(config: RenovateConfig) {
                 stringResource(if (it) R.string.config_enabled else R.string.config_disabled),
             )
         }
-        config.schedule?.let { ConfigRow(stringResource(R.string.config_schedule), it) }
+        if (config.schedule.isNotEmpty()) {
+            ConfigRow(
+                config.timezone?.let { stringResource(R.string.config_schedule_in, it) } ?: stringResource(R.string.config_schedule),
+                config.schedule.joinToString("\n") { "${it.label}: ${it.times.joinToString(", ")}" },
+            )
+        }
         config.rebasing?.let { ConfigRow(stringResource(R.string.config_rebasing), it) }
         if (config.immortal) {
             Text(
